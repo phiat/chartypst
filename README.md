@@ -2,19 +2,21 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Typst](https://img.shields.io/badge/typst-%3E%3D0.12.0-239dad)](https://typst.app)
-[![Charts](https://img.shields.io/badge/chart_types-38-orange)](screenshots/)
+[![Charts](https://img.shields.io/badge/chart_types-50-orange)](screenshots/)
 [![Pure Typst](https://img.shields.io/badge/dependencies-zero-brightgreen)]()
 
 A charting library for [Typst](https://typst.app) built entirely with native primitives (`rect`, `circle`, `line`, `polygon`, `place`). No external dependencies required.
 
 ## Showcase
 
-All 38 chart types across 4 pages:
+All 50 chart types across 6 pages:
 
 ![Showcase Page 1](screenshots/showcase-1.png)
 ![Showcase Page 2](screenshots/showcase-2.png)
 ![Showcase Page 3](screenshots/showcase-3.png)
 ![Showcase Page 4](screenshots/showcase-4.png)
+![Showcase Page 5](screenshots/showcase-5.png)
+![Showcase Page 6](screenshots/showcase-6.png)
 
 ## Features
 
@@ -80,9 +82,29 @@ All 38 chart types across 4 pages:
 - `bullet-chart` - Compact gauge with qualitative ranges and target
 - `bullet-charts` - Multiple bullet charts stacked vertically
 
+### Proportional & Hierarchical
+- `waffle-chart` - 10×10 grid of colored squares for proportions
+- `sunburst-chart` - Multi-level hierarchical pie with nested rings
+- `parliament-chart` - Semicircle dot layout for seat visualization
+
+### Comparison & Ranking
+- `bump-chart` - Multi-period ranking chart
+- `dumbbell-chart` - Before/after dot comparisons with connecting lines
+- `radial-bar-chart` - Circular bars radiating from center
+
+### Distribution
+- `violin-plot` - Kernel density estimation with mirrored polygon
+
 ### Flow & Timeline
 - `sankey-chart` - Flow diagram with curved bands between nodes
 - `gantt-chart` - Timeline bar chart for project scheduling
+- `timeline-chart` - Vertical event timeline with alternating layout
+- `chord-diagram` - Circular flow diagram with chord bands
+
+### Dashboard
+- `metric-card` - KPI tile with value, delta, and sparkline
+- `metric-row` - Horizontal row of metric cards
+- `word-cloud` - Weighted text layout sized by importance
 
 ### Annotations
 Overlay reference lines, bands, and labels on bar, line, and scatter charts:
@@ -286,6 +308,17 @@ primaviz/
       slope.typ
       diverging.typ
       gantt.typ
+      waffle.typ
+      bump.typ
+      dumbbell.typ
+      radial-bar.typ
+      sunburst.typ
+      metric.typ       # metric-card, metric-row
+      violin.typ
+      timeline.typ
+      parliament.typ
+      chord.typ
+      wordcloud.typ
     primitives/        # Low-level drawing helpers
       axes.typ
       annotations.typ
@@ -294,7 +327,7 @@ primaviz/
       title.typ
     validate.typ       # Input validation helpers
   examples/
-    showcase.typ       # 3-page compact showcase (dark theme)
+    showcase.typ       # 6-page compact showcase (dark theme)
     demo.typ           # Comprehensive 18-page demo
   data/                # Sample JSON data files
   screenshots/         # Gallery images

@@ -1,4 +1,4 @@
-// Compact showcase — All 27 chart types on 3 pages (dark theme)
+// Compact showcase — All 50 chart types on 6 pages (dark theme)
 #import "../src/lib.typ": *
 
 #set page(margin: (x: 0.6cm, y: 0.6cm), paper: "a4", fill: rgb("#1a1a2e"))
@@ -464,4 +464,174 @@
    )),
   width: 350pt, height: 100pt,
   theme: dk,
+)
+
+#pagebreak()
+
+// ── Page 5: Waffle, Bump, Dumbbell, Radial Bar, Sunburst, Metric ─────────────
+
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 8pt,
+  row-gutter: 4pt,
+
+  waffle-chart(
+    (labels: ("Rust", "C", "Python", "Go", "Other"),
+     values: (35, 28, 18, 12, 7)),
+    size: 120pt,
+    gap: 1pt,
+    title: "waffle-chart",
+    theme: dk,
+  ),
+
+  bump-chart(
+    (labels: ("Jan", "Feb", "Mar", "Apr", "May"),
+     series: (
+       (name: "Alpha", values: (1, 2, 1, 3, 2)),
+       (name: "Beta", values: (3, 1, 2, 1, 1)),
+       (name: "Gamma", values: (2, 3, 3, 2, 3)),
+     )),
+    width: 250pt, height: 120pt,
+    title: "bump-chart",
+    dot-size: 4pt,
+    theme: dk,
+  ),
+
+  dumbbell-chart(
+    (labels: ("Revenue", "Users", "NPS", "Uptime", "Latency"),
+     start-values: (45, 60, 72, 88, 35),
+     end-values: (78, 85, 68, 95, 22),
+     start-label: "2023",
+     end-label: "2024"),
+    width: 250pt, height: 120pt,
+    title: "dumbbell-chart",
+    show-values: true,
+    theme: dk,
+  ),
+
+  radial-bar-chart(
+    (labels: ("Sales", "Marketing", "Eng", "Design", "Support"),
+     values: (85, 72, 95, 60, 78)),
+    size: 120pt,
+    title: "radial-bar-chart",
+    show-labels: true,
+    theme: dk,
+  ),
+
+  sunburst-chart(
+    (name: "Total",
+     children: (
+       (name: "A", value: 40,
+        children: (
+          (name: "A1", value: 25),
+          (name: "A2", value: 15),
+        )),
+       (name: "B", value: 35,
+        children: (
+          (name: "B1", value: 20),
+          (name: "B2", value: 15),
+        )),
+       (name: "C", value: 25),
+     )),
+    size: 120pt,
+    inner-radius: 20pt,
+    ring-width: 25pt,
+    title: "sunburst-chart",
+    theme: dk,
+  ),
+
+  // Metric cards
+  [
+    #text(size: 8pt, weight: "bold", fill: rgb("#e0e0e0"))[metric-card · metric-row]
+    #v(3pt)
+    #metric-row(
+      (
+        (value: 12847, label: "Users", delta: 12.3, trend: (45, 52, 48, 61, 58, 72)),
+        (value: 94.2, label: "Uptime %", delta: 0.5, trend: (91, 93, 92, 94, 93, 94)),
+        (value: 342, label: "Issues", delta: -8.1, trend: (380, 365, 370, 355, 350, 342)),
+      ),
+      width: 250pt,
+      gap: 5pt,
+      theme: dk,
+    )
+  ],
+
+  violin-plot(
+    (labels: ("Group A", "Group B", "Group C"),
+     datasets: (
+       (5, 8, 12, 15, 18, 20, 22, 25, 28, 30, 32, 35, 38, 40, 42, 45, 48, 50, 52, 55),
+       (10, 15, 20, 22, 25, 25, 28, 30, 30, 32, 35, 35, 38, 40, 42, 45, 50, 55, 60, 65),
+       (2, 5, 8, 10, 12, 15, 18, 20, 22, 25, 28, 30, 32, 35, 38, 42, 48, 55, 62, 70),
+     )),
+    width: 250pt, height: 130pt,
+    title: "violin-plot",
+    theme: dk,
+  ),
+
+  timeline-chart(
+    (events: (
+       (date: "Jan 2024", title: "Kickoff", description: "Project started"),
+       (date: "Mar 2024", title: "Alpha", description: "First release"),
+       (date: "Jun 2024", title: "Beta", description: "Public beta"),
+       (date: "Sep 2024", title: "v1.0", description: "Stable release"),
+     )),
+    width: 250pt,
+    event-gap: 45pt,
+    title: "timeline-chart",
+    theme: dk,
+  ),
+)
+
+#pagebreak()
+
+// ── Page 6: Parliament, Chord, Word Cloud ────────────────────────────────────
+
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 8pt,
+  row-gutter: 4pt,
+
+  parliament-chart(
+    (labels: ("Party A", "Party B", "Party C", "Party D", "Indep"),
+     values: (120, 95, 55, 25, 5)),
+    size: 130pt,
+    dot-size: 3pt,
+    title: "parliament-chart",
+    theme: dk,
+  ),
+
+  chord-diagram(
+    (labels: ("Web", "API", "DB", "Cache", "Queue"),
+     matrix: (
+       (0, 25, 15, 10, 5),
+       (20, 0, 30, 8, 12),
+       (10, 25, 0, 20, 5),
+       (8, 5, 15, 0, 10),
+       (3, 10, 5, 8, 0),
+     )),
+    size: 130pt,
+    arc-width: 10pt,
+    title: "chord-diagram",
+    theme: dk,
+  ),
+
+  word-cloud(
+    (words: (
+       (text: "Typst", weight: 10),
+       (text: "Charts", weight: 8),
+       (text: "Data", weight: 7),
+       (text: "Visualization", weight: 6),
+       (text: "Graphs", weight: 5),
+       (text: "Plots", weight: 5),
+       (text: "Analytics", weight: 4),
+       (text: "Dashboard", weight: 4),
+       (text: "Metrics", weight: 3),
+       (text: "Trends", weight: 3),
+       (text: "Reports", weight: 2),
+       (text: "Insights", weight: 2),
+     )),
+    width: 250pt, height: 130pt,
+    title: "word-cloud",
+    theme: dk,
+  ),
 )

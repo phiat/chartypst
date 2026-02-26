@@ -1,4 +1,4 @@
-// charting library - Public entrypoint
+// primaviz - Public entrypoint
 // Re-exports all chart types from individual modules
 
 #import "theme.typ": resolve-theme, get-color, default-theme, minimal-theme, dark-theme, presentation-theme, print-theme, accessible-theme, themes
