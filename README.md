@@ -9,7 +9,7 @@ A charting library for [Typst](https://typst.app) built entirely with native pri
 
 ## Showcase
 
-All 25+ chart types on 2 pages (Linux kernel subsystem data, dark theme):
+All 25+ chart types on 2 pages:
 
 ![Showcase Page 1](screenshots/showcase-1.png)
 ![Showcase Page 2](screenshots/showcase-2.png)
@@ -208,7 +208,7 @@ Pass a dictionary with only the keys you want to change. Unspecified keys fall b
 
 ## Examples
 
-- `examples/showcase.typ` - Compact 2-page showcase of all chart types (dark theme, Linux kernel data)
+- `examples/showcase.typ` - Compact 2-page showcase of all chart types
 - `examples/demo.typ` - Comprehensive 18-page demo with all features
 
 Sample data files in `data/`:
@@ -216,16 +216,10 @@ Sample data files in `data/`:
 - `data/events.json` - Conference/event data
 - `data/analytics.json` - Dashboard analytics data
 
-Dev commands via [just](https://github.com/casey/just):
 ```bash
-just demo       # Compile the full demo
-just showcase   # Compile the 2-page showcase
-just watch      # Live-reload during development
-just check      # Run all compilation tests
-just screenshots # Regenerate gallery images
+typst compile --root . examples/demo.typ
+typst compile --root . examples/showcase.typ
 ```
-
-Issue tracking with [beads](https://github.com/steveyegge/beads).
 
 ## Color Palette
 
@@ -278,6 +272,21 @@ typst-charts/
   screenshots/         # Gallery images
   justfile             # Common dev commands
 ```
+
+## Development
+
+Dev commands via [just](https://github.com/casey/just):
+
+```bash
+just demo         # Compile the full demo
+just showcase     # Compile the 2-page showcase
+just watch        # Live-reload during development
+just check        # Run all compilation tests
+just screenshots  # Regenerate gallery images
+just stats        # Show project stats
+```
+
+Issue tracking with [beads](https://github.com/steveyegge/beads).
 
 ## License
 
