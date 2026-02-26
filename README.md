@@ -2,14 +2,14 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Typst](https://img.shields.io/badge/typst-%3E%3D0.12.0-239dad)](https://typst.app)
-[![Charts](https://img.shields.io/badge/chart_types-27-orange)](screenshots/)
+[![Charts](https://img.shields.io/badge/chart_types-29-orange)](screenshots/)
 [![Pure Typst](https://img.shields.io/badge/dependencies-zero-brightgreen)]()
 
 A charting library for [Typst](https://typst.app) built entirely with native primitives (`rect`, `circle`, `line`, `polygon`, `place`). No external dependencies required.
 
 ## Showcase
 
-All 27 chart types across 3 pages:
+All 29 chart types across 3 pages:
 
 ![Showcase Page 1](screenshots/showcase-1.png)
 ![Showcase Page 2](screenshots/showcase-2.png)
@@ -17,7 +17,7 @@ All 27 chart types across 3 pages:
 
 ## Features
 
-- **27 chart types** for data visualization
+- **29 chart types** for data visualization
 - **JSON data input** - load data directly from JSON files
 - **Theme system** - preset themes and custom overrides for consistent styling
 - **Customizable** - colors, sizes, labels, legends
@@ -34,6 +34,7 @@ All 27 chart types across 3 pages:
 ### Line & Area Charts
 - `line-chart` - Single line with points
 - `multi-line-chart` - Multiple series comparison
+- `dual-axis-chart` - Two independent Y-axes
 - `area-chart` - Filled area under line
 - `stacked-area-chart` - Stacked area series
 
@@ -51,6 +52,7 @@ All 27 chart types across 3 pages:
 - `gauge-chart` - Semi-circular dial gauge
 - `progress-bar` - Horizontal progress bar
 - `circular-progress` - Ring progress indicator
+- `ring-progress` - Concentric fitness rings (Apple Watch style)
 - `progress-bars` - Multiple comparison bars
 
 ### Sparklines (inline)
@@ -164,6 +166,7 @@ Pass a dictionary with only the keys you want to change. Unspecified keys fall b
 | `themes.dark` | Dark background (`#1a1a2e`), vibrant neon palette (cyan, pink, purple, ...) |
 | `themes.presentation` | Larger font sizes across the board for slides and projectors |
 | `themes.print` | Grayscale palette with grid lines, optimized for black-and-white printing |
+| `themes.accessible` | Okabe-Ito colorblind-safe palette |
 
 ## Data Formats
 
@@ -210,7 +213,7 @@ Pass a dictionary with only the keys you want to change. Unspecified keys fall b
 
 ## Examples
 
-- `examples/showcase.typ` - Compact 3-page showcase of all 27 chart types
+- `examples/showcase.typ` - Compact 3-page showcase of all 29 chart types
 - `examples/demo.typ` - Comprehensive 18-page demo with all features
 
 Sample data files in `data/`:
@@ -250,16 +253,19 @@ typst-charts/
     charts/            # One module per chart family
       bar.typ
       line.typ
+      dual-axis.typ
       area.typ
       pie.typ
       radar.typ
       scatter.typ
       gauge.typ
+      rings.typ
       heatmap.typ
       sparkline.typ
       waterfall.typ
       funnel.typ
       boxplot.typ
+      histogram.typ
     primitives/        # Low-level drawing helpers
       axes.typ
       annotations.typ
@@ -268,7 +274,7 @@ typst-charts/
       title.typ
     validate.typ       # Input validation helpers
   examples/
-    showcase.typ       # 2-page compact showcase (dark theme)
+    showcase.typ       # 3-page compact showcase (dark theme)
     demo.typ           # Comprehensive 18-page demo
   data/                # Sample JSON data files
   screenshots/         # Gallery images

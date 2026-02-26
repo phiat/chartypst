@@ -200,6 +200,27 @@
       circular-progress(78, size: 50pt, title: "mm", color: rgb("#0be881"), theme: dk),
     )
   ],
+
+  ring-progress(
+    (
+      (name: "Move", value: 420, max: 500),
+      (name: "Exercise", value: 28, max: 30),
+      (name: "Stand", value: 10, max: 12),
+    ),
+    size: 100pt,
+    ring-width: 10pt,
+    title: "ring-progress",
+    theme: dk,
+  ),
+
+  dual-axis-chart(
+    (labels: ("Jan", "Feb", "Mar", "Apr", "May", "Jun"),
+     left: (name: "Revenue ($K)", values: (120, 150, 180, 165, 210, 240)),
+     right: (name: "Users (K)", values: (1.2, 1.8, 2.1, 2.5, 3.0, 3.8))),
+    width: 250pt, height: 110pt,
+    title: "dual-axis-chart",
+    theme: dk,
+  ),
 )
 
 #pagebreak()
