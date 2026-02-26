@@ -93,10 +93,10 @@ Overlay reference lines, bands, and labels on bar, line, and scatter charts:
 
 ## Installation
 
-### Package (when published)
+### Package
 
 ```typst
-#import "@preview/charting:0.1.0": *
+#import "@preview/chartypst:0.1.0": *
 ```
 
 ### Local
