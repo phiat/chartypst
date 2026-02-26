@@ -365,6 +365,42 @@ Dots: #sparkdot(spark-data)
 
 #pagebreak()
 
+// ── Violin Plot ─────────────────────────────────────────────────────────
+
+= Violin Plot
+
+#violin-plot(
+  (
+    labels: ("Group A", "Group B", "Group C"),
+    datasets: (
+      (2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 7, 8, 9, 12, 15),
+      (1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6, 7, 8, 10, 11),
+      (5, 6, 6, 7, 7, 7, 7, 8, 8, 8, 9, 9, 10, 11, 12),
+    ),
+  ),
+  width: 350pt,
+  height: 250pt,
+  title: "Distribution Shapes",
+)
+
+#v(12pt)
+
+#violin-plot(
+  (
+    labels: ("Narrow", "Wide"),
+    datasets: (
+      (5, 5, 5, 5, 5, 5, 5, 5, 5, 5),
+      (1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+    ),
+  ),
+  width: 300pt,
+  height: 200pt,
+  title: "Violin (no inner box)",
+  show-box: false,
+)
+
+#pagebreak()
+
 // ── Histogram ────────────────────────────────────────────────────────────
 
 = Histogram
@@ -474,6 +510,59 @@ Dots: #sparkdot(spark-data)
   height: 200pt,
   title: "Sankey (with values)",
   show-values: true,
+)
+
+#pagebreak()
+
+// ── Chord Diagram ──────────────────────────────────────────────────────────
+
+= Chord Diagram
+
+#chord-diagram(
+  (
+    labels: ("A", "B", "C", "D"),
+    matrix: (
+      (0, 10, 5, 3),
+      (8, 0, 7, 2),
+      (4, 6, 0, 9),
+      (2, 3, 8, 0),
+    ),
+  ),
+  size: 300pt,
+  title: "Basic Chord Diagram",
+)
+
+#v(12pt)
+
+#chord-diagram(
+  (
+    labels: ("Sales", "Marketing", "Engineering"),
+    matrix: (
+      (0, 20, 10),
+      (15, 0, 25),
+      (5, 12, 0),
+    ),
+  ),
+  size: 250pt,
+  arc-width: 20pt,
+  gap: 4,
+  title: "Department Collaboration",
+)
+
+#v(12pt)
+
+// Minimal: two entities
+#chord-diagram(
+  (
+    labels: ("X", "Y"),
+    matrix: (
+      (0, 50),
+      (30, 0),
+    ),
+  ),
+  size: 200pt,
+  title: "Two-Entity Chord",
+  show-labels: false,
 )
 
 #pagebreak()
@@ -628,4 +717,436 @@ Dots: #sparkdot(spark-data)
   ),
   width: 350pt,
   title: "Gantt (no groups, auto labels)",
+)
+
+#pagebreak()
+
+// ── Waffle Chart ──────────────────────────────────────────────────────────
+
+= Waffle Chart
+
+#waffle-chart(
+  (
+    labels: ("Category A", "Category B", "Category C"),
+    values: (45, 30, 25),
+  ),
+  title: "Basic Waffle (percentages)",
+)
+
+#v(12pt)
+
+#waffle-chart(
+  (
+    labels: ("Rent", "Food", "Transport", "Savings"),
+    values: (35, 25, 20, 20),
+  ),
+  size: 180pt,
+  title: "Budget Breakdown",
+  rounded: false,
+)
+
+#v(12pt)
+
+#waffle-chart(
+  (
+    labels: ("Yes", "No"),
+    values: (72, 28),
+  ),
+  size: 150pt,
+  gap: 3pt,
+  title: "Survey Response",
+  show-values: true,
+)
+
+#v(12pt)
+
+// Non-percentage values (will be normalized)
+#waffle-chart(
+  (
+    labels: ("Dogs", "Cats", "Birds"),
+    values: (500, 300, 200),
+  ),
+  size: 160pt,
+  title: "Pet Ownership (normalized)",
+  show-legend: true,
+)
+
+#pagebreak()
+
+// ── Bump Chart ──────────────────────────────────────────────────────────
+
+= Bump Chart
+
+#bump-chart(
+  (
+    labels: ("2020", "2021", "2022", "2023", "2024"),
+    series: (
+      (name: "Team A", values: (1, 2, 1, 3, 2)),
+      (name: "Team B", values: (3, 1, 2, 1, 1)),
+      (name: "Team C", values: (2, 3, 3, 2, 3)),
+    ),
+  ),
+  width: 400pt,
+  height: 250pt,
+  title: "F1 Championship Positions",
+)
+
+#v(12pt)
+
+#bump-chart(
+  (
+    labels: ("Q1", "Q2", "Q3", "Q4"),
+    series: (
+      (name: "Alpha", values: (1, 1, 2, 1)),
+      (name: "Beta", values: (2, 3, 1, 2)),
+      (name: "Gamma", values: (3, 2, 3, 3)),
+    ),
+  ),
+  width: 350pt,
+  height: 200pt,
+  title: "Bump Chart (no labels)",
+  show-labels: false,
+  dot-size: 6pt,
+  line-width: 3pt,
+)
+
+#pagebreak()
+
+// ── Radial Bar Chart ──────────────────────────────────────────────────────
+
+= Radial Bar Chart
+
+#radial-bar-chart(
+  (
+    labels: ("Sales", "Marketing", "Engineering", "Support", "HR"),
+    values: (85, 62, 95, 48, 30),
+  ),
+  title: "Department Performance",
+)
+
+#v(12pt)
+
+#radial-bar-chart(
+  (
+    labels: ("Q1", "Q2", "Q3", "Q4"),
+    values: (120, 95, 140, 110),
+  ),
+  size: 200pt,
+  inner-radius: 0.4,
+  title: "Quarterly Revenue",
+  show-values: true,
+)
+
+#v(12pt)
+
+#radial-bar-chart(
+  (
+    labels: ("A", "B", "C"),
+    values: (50, 50, 50),
+  ),
+  size: 180pt,
+  inner-radius: 0.0,
+  title: "Equal Values (no hole)",
+  show-labels: false,
+)
+
+#pagebreak()
+
+// ── Dumbbell Chart ──────────────────────────────────────────────────────
+
+= Dumbbell Chart
+
+#dumbbell-chart(
+  (
+    labels: ("Revenue", "Costs", "Profit", "Headcount"),
+    start-values: (100, 80, 20, 50),
+    end-values: (150, 70, 80, 65),
+    start-label: "2023",
+    end-label: "2024",
+  ),
+  width: 400pt,
+  height: 200pt,
+  title: "Year-over-Year Comparison",
+  show-values: true,
+)
+
+#v(12pt)
+
+#dumbbell-chart(
+  (
+    labels: ("Math", "Science", "English"),
+    start-values: (70, 70, 70),
+    end-values: (85, 60, 90),
+    start-label: "Pre-test",
+    end-label: "Post-test",
+  ),
+  width: 350pt,
+  height: 180pt,
+  title: "Dumbbell (no values)",
+  dot-size: 6pt,
+)
+
+#v(12pt)
+
+// Equal values edge case
+#dumbbell-chart(
+  (
+    labels: ("A", "B"),
+    start-values: (50, 50),
+    end-values: (50, 50),
+  ),
+  width: 300pt,
+  height: 120pt,
+  title: "Dumbbell (equal values)",
+)
+
+#pagebreak()
+
+// ── Metric Card ──────────────────────────────────────────────────────
+
+= Metric Card
+
+// Full-featured metric card with delta and trend sparkline
+#metric-card(
+  value: 1234,
+  label: "Revenue",
+  delta: 12.5,
+  trend: (80, 85, 82, 90, 88, 95, 92, 100),
+)
+
+#v(12pt)
+
+// Minimal metric card — value and label only
+#metric-card(value: 42, label: "Users Online")
+
+#v(12pt)
+
+// Negative delta
+#metric-card(
+  value: 8750,
+  label: "Expenses",
+  delta: -5.2,
+  trend: (100, 98, 95, 90, 88, 85, 82, 80),
+  format: "comma",
+)
+
+#v(12pt)
+
+// Metric row — multiple cards side by side
+#metric-row(
+  (
+    (value: 1234, label: "Revenue", delta: 12.5),
+    (value: 42, label: "Users Online"),
+    (value: 8750, label: "Expenses", delta: -5.2, format: "si"),
+    (value: 99.9, label: "Uptime %", delta: 0.1, trend: (99, 99, 100, 99, 100, 100, 99, 100)),
+  ),
+  gap: 12pt,
+)
+
+#pagebreak()
+
+// ── Sunburst Chart ──────────────────────────────────────────────────────
+
+= Sunburst Chart
+
+#sunburst-chart(
+  (
+    name: "Total",
+    value: 100,
+    children: (
+      (name: "A", value: 60, children: (
+        (name: "A1", value: 35),
+        (name: "A2", value: 25),
+      )),
+      (name: "B", value: 40, children: (
+        (name: "B1", value: 15),
+        (name: "B2", value: 10),
+        (name: "B3", value: 15),
+      )),
+    ),
+  ),
+  title: "Hierarchical Breakdown",
+)
+
+#v(12pt)
+
+#sunburst-chart(
+  (
+    name: "Root",
+    value: 200,
+    children: (
+      (name: "Engineering", value: 80, children: (
+        (name: "Backend", value: 45, children: (
+          (name: "API", value: 25),
+          (name: "DB", value: 20),
+        )),
+        (name: "Frontend", value: 35),
+      )),
+      (name: "Sales", value: 70, children: (
+        (name: "Direct", value: 40),
+        (name: "Channel", value: 30),
+      )),
+      (name: "Support", value: 50),
+    ),
+  ),
+  size: 350pt,
+  inner-radius: 50pt,
+  ring-width: 40pt,
+  title: "Organization Budget (3 levels)",
+)
+
+#v(12pt)
+
+// Minimal: single level (no grandchildren)
+#sunburst-chart(
+  (
+    name: "Root",
+    value: 100,
+    children: (
+      (name: "X", value: 50),
+      (name: "Y", value: 30),
+      (name: "Z", value: 20),
+    ),
+  ),
+  size: 200pt,
+  title: "Sunburst (single ring)",
+  show-labels: false,
+)
+
+#pagebreak()
+
+// ── Timeline Chart ──────────────────────────────────────────────────────
+
+= Timeline Chart
+
+#timeline-chart(
+  (
+    events: (
+      (date: "Jan 2024", title: "Project Start", description: "Initial planning phase"),
+      (date: "Mar 2024", title: "v0.1 Release", description: "First public beta"),
+      (date: "Jun 2024", title: "v0.5 Release", description: "Added 20 chart types"),
+      (date: "Sep 2024", title: "v1.0 Launch", description: "Production ready"),
+    ),
+  ),
+  title: "Project Milestones",
+)
+
+#v(12pt)
+
+// With categories for color coding
+#timeline-chart(
+  (
+    events: (
+      (date: "Week 1", title: "Research", description: "Market analysis", category: "Planning"),
+      (date: "Week 3", title: "Design", description: "UI/UX mockups", category: "Planning"),
+      (date: "Week 5", title: "Backend", description: "API development", category: "Dev"),
+      (date: "Week 8", title: "Frontend", description: "React components", category: "Dev"),
+      (date: "Week 10", title: "Testing", description: "QA and bug fixes", category: "QA"),
+      (date: "Week 12", title: "Launch", category: "Release"),
+    ),
+  ),
+  width: 400pt,
+  event-gap: 55pt,
+  marker-size: 7pt,
+  title: "Timeline with Categories",
+)
+
+#v(12pt)
+
+// Minimal: no descriptions
+#timeline-chart(
+  (
+    events: (
+      (date: "2023", title: "Founded"),
+      (date: "2024", title: "Series A"),
+      (date: "2025", title: "IPO"),
+    ),
+  ),
+  width: 300pt,
+  event-gap: 50pt,
+  title: "Company History (minimal)",
+)
+
+#pagebreak()
+
+// ── Parliament Chart ──────────────────────────────────────────────────────
+
+= Parliament Chart
+
+#parliament-chart(
+  (
+    labels: ("Party A", "Party B", "Party C", "Independent"),
+    values: (120, 95, 70, 15),
+  ),
+  title: "Parliament (300 seats)",
+)
+
+#v(12pt)
+
+#parliament-chart(
+  (
+    labels: ("Left", "Center", "Right"),
+    values: (200, 150, 100),
+  ),
+  size: 300pt,
+  dot-size: 3pt,
+  gap: 1pt,
+  title: "Large Parliament (450 seats)",
+)
+
+#v(12pt)
+
+#parliament-chart(
+  (
+    labels: ("Majority", "Opposition"),
+    values: (30, 20),
+  ),
+  size: 180pt,
+  dot-size: 6pt,
+  gap: 2pt,
+  title: "Small Chamber (50 seats)",
+  show-legend: false,
+)
+
+#pagebreak()
+
+// ── Word Cloud ──────────────────────────────────────────────────────
+
+= Word Cloud
+
+#word-cloud(
+  (
+    words: (
+      (text: "Typst", weight: 100),
+      (text: "Charts", weight: 80),
+      (text: "Data", weight: 60),
+      (text: "Visualization", weight: 50),
+      (text: "Pure", weight: 40),
+      (text: "Native", weight: 35),
+      (text: "Theme", weight: 30),
+      (text: "Color", weight: 25),
+      (text: "Simple", weight: 20),
+      (text: "Fast", weight: 15),
+    ),
+  ),
+  width: 350pt,
+  height: 200pt,
+  title: "Word Cloud",
+)
+
+#v(12pt)
+
+#word-cloud(
+  (
+    words: (
+      (text: "Alpha", weight: 50),
+      (text: "Beta", weight: 50),
+      (text: "Gamma", weight: 50),
+    ),
+  ),
+  width: 300pt,
+  height: 150pt,
+  title: "Word Cloud (equal weights)",
+  min-size: 14pt,
+  max-size: 14pt,
 )

@@ -190,6 +190,25 @@
   }
 }
 
+// Validate chord data (labels + square matrix)
+#let validate-chord-data(data, chart-name) = {
+  assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
+  assert("labels" in data, message: chart-name + ": data must have 'labels' key")
+  assert("matrix" in data, message: chart-name + ": data must have 'matrix' key")
+  assert(type(data.labels) == array, message: chart-name + ": labels must be an array")
+  assert(type(data.matrix) == array, message: chart-name + ": matrix must be an array")
+  let n = data.labels.len()
+  assert(n > 0, message: chart-name + ": labels must not be empty")
+  assert(data.matrix.len() == n,
+    message: chart-name + ": matrix must have " + str(n) + " rows to match labels, got " + str(data.matrix.len()))
+  for (i, row) in data.matrix.enumerate() {
+    assert(type(row) == array,
+      message: chart-name + ": matrix[" + str(i) + "] must be an array")
+    assert(row.len() == n,
+      message: chart-name + ": matrix[" + str(i) + "] must have " + str(n) + " columns, got " + str(row.len()))
+  }
+}
+
 // Validate sankey data (nodes + flows)
 #let validate-sankey-data(data, chart-name) = {
   assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
@@ -252,6 +271,19 @@
     message: chart-name + ": labels (" + str(data.labels.len()) + ") and end-values (" + str(data.end-values.len()) + ") must have same length")
 }
 
+// Validate dumbbell data (labels + start-values + end-values, same length)
+#let validate-dumbbell-data(data, chart-name) = {
+  assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
+  assert("labels" in data, message: chart-name + ": data must have 'labels' key")
+  assert("start-values" in data, message: chart-name + ": data must have 'start-values' key")
+  assert("end-values" in data, message: chart-name + ": data must have 'end-values' key")
+  assert(data.labels.len() > 0, message: chart-name + ": labels must not be empty")
+  assert(data.labels.len() == data.start-values.len(),
+    message: chart-name + ": labels (" + str(data.labels.len()) + ") and start-values (" + str(data.start-values.len()) + ") must have same length")
+  assert(data.labels.len() == data.end-values.len(),
+    message: chart-name + ": labels (" + str(data.labels.len()) + ") and end-values (" + str(data.end-values.len()) + ") must have same length")
+}
+
 // Validate diverging bar data (labels + left-values + right-values)
 #let validate-diverging-data(data, chart-name) = {
   assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
@@ -277,6 +309,81 @@
     assert("name" in s, message: chart-name + ": series[" + str(i) + "] must have 'name' key")
     assert("points" in s, message: chart-name + ": series[" + str(i) + "] must have 'points' key")
     assert(s.points.len() > 0, message: chart-name + ": series '" + s.name + "' must have at least one point")
+  }
+}
+
+// Validate violin data (labels + datasets of raw observations)
+#let validate-violin-data(data, chart-name) = {
+  assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
+  assert("labels" in data, message: chart-name + ": data must have 'labels' key")
+  assert("datasets" in data, message: chart-name + ": data must have 'datasets' key")
+  assert(type(data.labels) == array, message: chart-name + ": labels must be an array")
+  assert(type(data.datasets) == array, message: chart-name + ": datasets must be an array")
+  assert(data.labels.len() > 0, message: chart-name + ": labels must not be empty")
+  assert(data.labels.len() == data.datasets.len(),
+    message: chart-name + ": labels (" + str(data.labels.len()) + ") and datasets (" + str(data.datasets.len()) + ") must have same length")
+  for (i, ds) in data.datasets.enumerate() {
+    assert(type(ds) == array,
+      message: chart-name + ": datasets[" + str(i) + "] must be an array")
+    assert(ds.len() > 0,
+      message: chart-name + ": datasets[" + str(i) + "] must not be empty")
+    for (j, v) in ds.enumerate() {
+      assert(type(v) == int or type(v) == float,
+        message: chart-name + ": datasets[" + str(i) + "][" + str(j) + "] must be numeric")
+    }
+  }
+}
+
+// Validate sunburst data (hierarchical: root with name, children array)
+#let validate-sunburst-data(data, chart-name) = {
+  assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
+  assert("name" in data, message: chart-name + ": root must have 'name' key")
+  assert("children" in data, message: chart-name + ": root must have 'children' key")
+  assert(type(data.children) == array, message: chart-name + ": children must be an array")
+  assert(data.children.len() > 0, message: chart-name + ": children must not be empty")
+  for (i, child) in data.children.enumerate() {
+    assert(type(child) == dictionary,
+      message: chart-name + ": children[" + str(i) + "] must be a dictionary")
+    assert("name" in child,
+      message: chart-name + ": children[" + str(i) + "] must have 'name' key")
+    assert("value" in child,
+      message: chart-name + ": children[" + str(i) + "] must have 'value' key")
+    assert(type(child.value) == int or type(child.value) == float,
+      message: chart-name + ": children[" + str(i) + "].value must be numeric")
+  }
+}
+
+// Validate timeline data (events array, each with date and title)
+#let validate-timeline-data(data, chart-name) = {
+  assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
+  assert("events" in data, message: chart-name + ": data must have 'events' key")
+  assert(type(data.events) == array, message: chart-name + ": events must be an array")
+  assert(data.events.len() > 0, message: chart-name + ": events must not be empty")
+  for (i, ev) in data.events.enumerate() {
+    assert(type(ev) == dictionary,
+      message: chart-name + ": events[" + str(i) + "] must be a dictionary")
+    for key in ("date", "title") {
+      assert(key in ev,
+        message: chart-name + ": events[" + str(i) + "] must have '" + key + "' key")
+    }
+  }
+}
+
+// Validate word cloud data (words array, each with text and weight)
+#let validate-wordcloud-data(data, chart-name) = {
+  assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
+  assert("words" in data, message: chart-name + ": data must have 'words' key")
+  assert(type(data.words) == array, message: chart-name + ": words must be an array")
+  assert(data.words.len() > 0, message: chart-name + ": words must not be empty")
+  for (i, w) in data.words.enumerate() {
+    assert(type(w) == dictionary,
+      message: chart-name + ": words[" + str(i) + "] must be a dictionary")
+    assert("text" in w,
+      message: chart-name + ": words[" + str(i) + "] must have 'text' key")
+    assert("weight" in w,
+      message: chart-name + ": words[" + str(i) + "] must have 'weight' key")
+    assert(type(w.weight) == int or type(w.weight) == float,
+      message: chart-name + ": words[" + str(i) + "].weight must be numeric")
   }
 }
 
