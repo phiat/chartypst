@@ -51,3 +51,8 @@
     }
   ]
 }
+
+// Right-positioned legend (vertical, for use in grid layout)
+#let draw-legend-right(entries, theme, width: 100pt) = {
+  draw-legend-vertical(entries, theme, width: width)
+}

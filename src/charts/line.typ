@@ -4,7 +4,8 @@
 #import "../validate.typ": validate-simple-data, validate-series-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": draw-grid, draw-axis-titles
-#import "../primitives/legend.typ": draw-legend
+#import "../primitives/legend.typ": draw-legend, draw-legend-vertical
+#import "../primitives/annotations.typ": draw-annotations
 
 // Single line chart
 #let line-chart(
@@ -19,6 +20,7 @@
   fill-area: false,
   x-label: none,
   y-label: none,
+  annotations: none,
   theme: none,
 ) = {
   validate-simple-data(data, "line-chart")
@@ -109,6 +111,9 @@
 
       // Axis titles
       #draw-axis-titles(x-label, y-label, 40pt + chart-width / 2, chart-height / 2, t)
+
+      // Annotations
+      #draw-annotations(annotations, 45pt, 10pt, chart-width - 10pt, chart-height - 20pt, 0, n - 1, min-val, max-val, t)
     ]
   ]
 }
@@ -211,8 +216,12 @@
       #draw-axis-titles(x-label, y-label, 40pt + chart-width / 2, chart-height / 2, t)
     ]
 
-    #if show-legend {
-      draw-legend(series.map(s => s.name), t, swatch-type: "line")
+    #if show-legend and t.legend-position != "none" {
+      if t.legend-position == "right" {
+        draw-legend-vertical(series.map(s => s.name), t)
+      } else {
+        draw-legend(series.map(s => s.name), t, swatch-type: "line")
+      }
     }
   ]
 }

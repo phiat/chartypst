@@ -178,6 +178,62 @@ Bars: #sparkbar(spark-data)
 == sparkdot
 Dots: #sparkdot(spark-data)
 
+// ── Funnel Chart ───────────────────────────────────────────────────────────
+
+= Funnel Chart
+
+#funnel-chart(
+  (
+    labels: ("Visitors", "Leads", "Qualified", "Proposals", "Closed"),
+    values: (10000, 5000, 2500, 1200, 500),
+  ),
+  width: 300pt,
+  height: 250pt,
+  title: "Sales Funnel",
+)
+
+#pagebreak()
+
+// ── Annotations ──────────────────────────────────────────────────────────
+
+= Annotations
+
+#line-chart(
+  (labels: ("Jan", "Feb", "Mar", "Apr", "May", "Jun"),
+   values: (30, 45, 35, 60, 50, 70)),
+  width: 400pt,
+  height: 200pt,
+  title: "Sales with Annotations",
+  annotations: (
+    (type: "h-line", value: 50, label: "Target", color: rgb("#e15759"), dash: "dashed"),
+    (type: "h-band", from: 40, to: 60, label: "Goal Zone", color: rgb("#59a14f")),
+  ),
+)
+
+#bar-chart(
+  (labels: ("A", "B", "C", "D", "E"), values: (20, 45, 30, 55, 40)),
+  width: 350pt,
+  height: 200pt,
+  title: "Bar Chart with Target Line",
+  annotations: (
+    (type: "h-line", value: 35, label: "Avg", color: rgb("#4e79a7"), dash: "dashed"),
+  ),
+)
+
+#scatter-plot(
+  (x: (1, 2, 3, 4, 5), y: (10, 25, 15, 30, 20)),
+  width: 350pt,
+  height: 250pt,
+  title: "Scatter with Annotations",
+  annotations: (
+    (type: "h-line", value: 20, label: "Threshold", color: rgb("#e15759"), dash: "dotted"),
+    (type: "v-line", value: 3, label: "Midpoint", color: rgb("#4e79a7"), dash: "dashed"),
+    (type: "label", x: 4, y: 30, text: "Peak!", color: rgb("#e15759")),
+  ),
+)
+
+#pagebreak()
+
 == Sparklines in a table
 
 #table(
@@ -187,4 +243,41 @@ Dots: #sparkdot(spark-data)
   [Revenue], [#sparkline((3, 5, 4, 7, 6, 9, 8), color: rgb("#59a14f"))],
   [Users],   [#sparkbar((2, 4, 3, 6, 5, 8, 7), color: rgb("#4e79a7"))],
   [Errors],  [#sparkdot((8, 6, 7, 4, 5, 2, 3), color: rgb("#e15759"))],
+)
+
+#pagebreak()
+
+// ── Waterfall Chart ──────────────────────────────────────────────────────────
+
+= Waterfall Chart
+
+#waterfall-chart(
+  (
+    labels: ("Start", "+Sales", "+Service", "-COGS", "-OpEx", "Total"),
+    values: (1000, 400, 150, -300, -200, 1050),
+  ),
+  width: 400pt,
+  height: 200pt,
+  title: "Revenue Waterfall",
+)
+
+#pagebreak()
+
+// ── Box Plot ──────────────────────────────────────────────────────────────
+
+= Box Plot
+
+#box-plot(
+  (
+    labels: ("Group A", "Group B", "Group C", "Group D"),
+    boxes: (
+      (min: 10, q1: 25, median: 35, q3: 50, max: 70),
+      (min: 15, q1: 30, median: 42, q3: 55, max: 65),
+      (min: 5, q1: 20, median: 28, q3: 40, max: 60),
+      (min: 20, q1: 35, median: 45, q3: 58, max: 75),
+    ),
+  ),
+  width: 350pt,
+  height: 200pt,
+  title: "Distribution Comparison",
 )

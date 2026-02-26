@@ -11,3 +11,6 @@
 #import "charts/gauge.typ": gauge-chart, progress-bar, circular-progress, progress-bars
 #import "charts/heatmap.typ": heatmap, calendar-heatmap, correlation-matrix
 #import "charts/sparkline.typ": sparkline, sparkbar, sparkdot
+#import "charts/funnel.typ": funnel-chart
+#import "charts/waterfall.typ": waterfall-chart
+#import "charts/boxplot.typ": box-plot

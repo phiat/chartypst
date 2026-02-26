@@ -4,7 +4,8 @@
 #import "../validate.typ": validate-simple-data, validate-series-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": draw-axis-lines, draw-grid, draw-axis-titles
-#import "../primitives/legend.typ": draw-legend
+#import "../primitives/legend.typ": draw-legend, draw-legend-vertical
+#import "../primitives/annotations.typ": draw-annotations
 
 // Horizontal bar chart
 #let horizontal-bar-chart(
@@ -111,6 +112,7 @@
   horizontal: false,
   x-label: none,
   y-label: none,
+  annotations: none,
   theme: none,
 ) = {
   validate-simple-data(data, "bar-chart")
@@ -182,6 +184,9 @@
 
       // Axis titles
       #draw-axis-titles(x-label, y-label, 30pt + chart-width / 2, chart-height / 2, t)
+
+      // Annotations
+      #draw-annotations(annotations, 35pt, 10pt, chart-width, chart-height - 10pt, -0.5, n - 0.5, 0, max-val, t)
     ]
   ]
 }
@@ -264,8 +269,12 @@
       #draw-axis-titles(x-label, y-label, 40pt + chart-width / 2, chart-height / 2, t)
     ]
 
-    #if show-legend {
-      draw-legend(series.map(s => s.name), t)
+    #if show-legend and t.legend-position != "none" {
+      if t.legend-position == "right" {
+        draw-legend-vertical(series.map(s => s.name), t)
+      } else {
+        draw-legend(series.map(s => s.name), t)
+      }
     }
   ]
 }
@@ -355,8 +364,12 @@
       #draw-axis-titles(x-label, y-label, 40pt + chart-width / 2, chart-height / 2, t)
     ]
 
-    #if show-legend {
-      draw-legend(series.map(s => s.name), t)
+    #if show-legend and t.legend-position != "none" {
+      if t.legend-position == "right" {
+        draw-legend-vertical(series.map(s => s.name), t)
+      } else {
+        draw-legend(series.map(s => s.name), t)
+      }
     }
   ]
 }

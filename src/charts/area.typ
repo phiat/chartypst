@@ -4,7 +4,7 @@
 #import "../validate.typ": validate-simple-data, validate-series-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": draw-grid, draw-axis-titles
-#import "../primitives/legend.typ": draw-legend
+#import "../primitives/legend.typ": draw-legend, draw-legend-vertical
 
 // Single area chart
 #let area-chart(
@@ -245,8 +245,12 @@
     ]
 
     // Legend
-    #if show-legend {
-      draw-legend(series.map(s => s.name), t)
+    #if show-legend and t.legend-position != "none" {
+      if t.legend-position == "right" {
+        draw-legend-vertical(series.map(s => s.name), t)
+      } else {
+        draw-legend(series.map(s => s.name), t)
+      }
     }
   ]
 }

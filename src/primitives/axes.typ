@@ -1,6 +1,7 @@
 // axes.typ - Axis drawing primitives
 
 #import "../theme.typ": *
+#import "../util.typ": format-number
 
 // Draw Y-axis (vertical) and X-axis (horizontal) lines.
 #let draw-axis-lines(origin-x, origin-y, x-end, y-start, theme) = {
@@ -23,17 +24,31 @@
     let value = min-val + val-range * fraction
     let y = y-offset + chart-height - fraction * chart-height
     place(left + top, dx: x-pos, dy: y - 5pt,
-      text(size: theme.axis-label-size, fill: theme.text-color)[#calc.round(value, digits: digits)]
+      text(size: theme.axis-label-size, fill: theme.text-color)[#format-number(value, digits: digits, mode: theme.number-format)]
     )
   }
 }
 
 // Draw category labels along the X axis.
 #let draw-x-category-labels(labels, x-start, spacing, y-pos, theme, center-offset: 0pt) = {
-  for i in array.range(labels.len()) {
-    place(left + top, dx: x-start + i * spacing + center-offset - 15pt, dy: y-pos,
-      text(size: theme.axis-label-size, fill: theme.text-color)[#labels.at(i)]
-    )
+  let n = labels.len()
+  let rotate-labels = n > 8 or spacing < 30pt
+  let skip = if n > 15 { calc.ceil(n / 10) } else { 1 }
+
+  for i in array.range(n) {
+    if calc.rem(i, skip) != 0 and i != n - 1 { continue }
+    let x = x-start + i * spacing + center-offset
+    if rotate-labels {
+      place(left + top, dx: x - 5pt, dy: y-pos,
+        rotate(-45deg, origin: top + right,
+          text(size: theme.axis-label-size, fill: theme.text-color)[#labels.at(i)]
+        )
+      )
+    } else {
+      place(left + top, dx: x - 15pt, dy: y-pos,
+        text(size: theme.axis-label-size, fill: theme.text-color)[#labels.at(i)]
+      )
+    }
   }
 }
 
@@ -46,7 +61,7 @@
     let value = min-val + val-range * fraction
     let x = x-offset + fraction * chart-width
     place(left + top, dx: x - 12pt, dy: y-pos,
-      text(size: theme.axis-label-size, fill: theme.text-color)[#calc.round(value, digits: digits)]
+      text(size: theme.axis-label-size, fill: theme.text-color)[#format-number(value, digits: digits, mode: theme.number-format)]
     )
   }
 }

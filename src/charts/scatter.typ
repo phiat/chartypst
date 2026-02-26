@@ -3,7 +3,8 @@
 #import "../validate.typ": validate-scatter-data, validate-multi-scatter-data, validate-bubble-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": draw-grid, draw-axis-titles
-#import "../primitives/legend.typ": draw-legend
+#import "../primitives/legend.typ": draw-legend, draw-legend-vertical
+#import "../primitives/annotations.typ": draw-annotations
 
 // Scatter plot
 #let scatter-plot(
@@ -16,6 +17,7 @@
   point-size: 5pt,
   show-grid: true,
   color: none,
+  annotations: none,
   theme: none,
 ) = {
   validate-scatter-data(data, "scatter-plot")
@@ -138,6 +140,9 @@
           rotate(-90deg, text(size: t.axis-title-size, fill: t.text-color)[#y-label])
         )
       }
+
+      // Annotations
+      #draw-annotations(annotations, x-start, y-start, chart-width, chart-height, x-min, x-max, y-min, y-max, t)
     ]
   ]
 }
@@ -236,12 +241,16 @@
     ]
 
     // Legend
-    #if show-legend {
-      draw-legend(
-        series.map(s => s.name),
-        t,
-        swatch-type: "circle",
-      )
+    #if show-legend and t.legend-position != "none" {
+      if t.legend-position == "right" {
+        draw-legend-vertical(series.map(s => s.name), t)
+      } else {
+        draw-legend(
+          series.map(s => s.name),
+          t,
+          swatch-type: "circle",
+        )
+      }
     }
   ]
 }

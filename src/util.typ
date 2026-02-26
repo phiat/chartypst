@@ -51,7 +51,47 @@
   calc.max(lo, calc.min(hi, val))
 }
 
-// Format a number with a given number of decimal digits.
-#let format-number(val, digits: 1) = {
-  calc.round(val, digits: digits)
+// Format a number for display.
+// mode: "auto" (pick best), "comma" (1,000), "si" (1.2k), "plain" (1000), "percent" (75%)
+#let format-number(val, digits: 1, mode: "auto") = {
+  let abs-val = calc.abs(val)
+  let rounded = calc.round(val, digits: digits)
+
+  if mode == "si" or (mode == "auto" and abs-val >= 10000) {
+    // SI abbreviations
+    if abs-val >= 1000000000 {
+      str(calc.round(val / 1000000000, digits: 1)) + "B"
+    } else if abs-val >= 1000000 {
+      str(calc.round(val / 1000000, digits: 1)) + "M"
+    } else if abs-val >= 1000 {
+      str(calc.round(val / 1000, digits: 1)) + "k"
+    } else {
+      str(rounded)
+    }
+  } else if mode == "comma" {
+    // Add comma separators - Typst doesn't have built-in number formatting
+    // so we'll build the string manually
+    let s = str(calc.round(val, digits: 0))
+    let negative = s.starts-with("-")
+    let digits-str = if negative { s.slice(1) } else { s }
+    let result = ""
+    let count = 0
+    // Process from right to left
+    let chars = digits-str.clusters()
+    let n = chars.len()
+    for i in array.range(n) {
+      let idx = n - 1 - i
+      if count > 0 and calc.rem(count, 3) == 0 {
+        result = "," + result
+      }
+      result = chars.at(idx) + result
+      count = count + 1
+    }
+    if negative { "-" + result } else { result }
+  } else if mode == "percent" {
+    str(calc.round(val, digits: digits)) + "%"
+  } else {
+    // plain or auto (below threshold)
+    str(rounded)
+  }
 }

@@ -87,6 +87,27 @@
     message: chart-name + ": value must be a number, got " + str(type(value)))
 }
 
+// Validate boxplot data (labels + boxes array)
+#let validate-boxplot-data(data, chart-name) = {
+  assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
+  assert("labels" in data, message: chart-name + ": data must have 'labels' key")
+  assert("boxes" in data, message: chart-name + ": data must have 'boxes' key")
+  assert(data.labels.len() > 0, message: chart-name + ": labels must not be empty")
+  assert(data.labels.len() == data.boxes.len(),
+    message: chart-name + ": labels and boxes must have same length")
+  for (i, b) in data.boxes.enumerate() {
+    for key in ("min", "q1", "median", "q3", "max") {
+      assert(key in b,
+        message: chart-name + ": box[" + str(i) + "] must have '" + key + "' key")
+    }
+  }
+}
+
+// Validate waterfall data (labels + values, optional types)
+#let validate-waterfall-data(data, chart-name) = {
+  validate-simple-data(data, chart-name)
+}
+
 // Validate multi-scatter data
 #let validate-multi-scatter-data(data, chart-name) = {
   assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
