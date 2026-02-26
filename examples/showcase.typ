@@ -150,19 +150,15 @@
     theme: dk,
   ),
 
-  // Gauge + progress — kernel health dashboard
-  [
-    #text(size: 8pt, weight: "bold", fill: rgb("#e0e0e0"))[Kernel CI Dashboard]
-    #v(2pt)
-    #grid(
-      columns: (1fr, 1fr, 1fr),
-      gauge-chart(78, size: 60pt, title: "Build", label: "pass", theme: dk),
-      gauge-chart(94, size: 60pt, title: "Boot", label: "pass", theme: dk),
-      gauge-chart(61, size: 60pt, title: "Perf", label: "score", theme: dk),
-    )
-    #v(2pt)
-    #progress-bar(87, width: 250pt, title: "Test Suite Coverage", theme: dk)
-  ],
+  // Histogram — syscall latency distribution
+  histogram(
+    (2, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8,
+     9, 9, 10, 10, 11, 12, 14, 15, 18, 22, 25, 30, 35, 42, 55, 70, 95),
+    width: 250pt, height: 110pt,
+    title: "Syscall Latency Distribution (μs)",
+    bins: 12,
+    theme: dk,
+  ),
 
   // Waterfall — patch lifecycle
   waterfall-chart(
