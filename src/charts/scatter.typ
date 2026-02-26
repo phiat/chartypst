@@ -1,5 +1,8 @@
-// chart-scatter.typ - Scatter plot and bubble chart
-#import "chart-common.typ": *
+// scatter.typ - Scatter plot and bubble chart
+#import "../theme.typ": resolve-theme, get-color
+#import "../primitives/container.typ": chart-container
+#import "../primitives/axes.typ": draw-grid, draw-axis-titles
+#import "../primitives/legend.typ": draw-legend
 
 // Scatter plot
 #let scatter-plot(
@@ -12,7 +15,9 @@
   point-size: 5pt,
   show-grid: true,
   color: none,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   // Normalize data format
   let points = if type(data) == dictionary {
     data.x.zip(data.y)
@@ -34,14 +39,9 @@
   if x-range == 0 { x-range = 1 }
   if y-range == 0 { y-range = 1 }
 
-  let point-color = if color != none { color } else { get-color(0) }
+  let point-color = if color != none { color } else { get-color(t, 0) }
 
-  box(width: width, height: height + 30pt)[
-    #if title != none {
-      align(center)[*#title*]
-      v(5pt)
-    }
-
+  chart-container(width, height, title, t, extra-height: 30pt)[
     #let chart-height = height - 30pt
     #let chart-width = width - 60pt
     #let x-start = 50pt
@@ -50,33 +50,34 @@
     #box(width: width, height: chart-height + 20pt)[
       // Grid lines
       #if show-grid {
-        for i in array.range(5) {
+        for i in array.range(t.tick-count) {
+          let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
           // Horizontal grid
-          let y-pos = y-start + (i / 4) * chart-height
+          let y-pos = y-start + fraction * chart-height
           place(
             left + top,
             line(
               start: (x-start, y-pos),
               end: (x-start + chart-width, y-pos),
-              stroke: luma(230) + 0.5pt
+              stroke: t.grid-stroke
             )
           )
           // Vertical grid
-          let x-pos = x-start + (i / 4) * chart-width
+          let x-pos = x-start + fraction * chart-width
           place(
             left + top,
             line(
               start: (x-pos, y-start),
               end: (x-pos, y-start + chart-height),
-              stroke: luma(230) + 0.5pt
+              stroke: t.grid-stroke
             )
           )
         }
       }
 
       // Axes
-      #place(left + top, line(start: (x-start, y-start), end: (x-start, y-start + chart-height), stroke: 0.5pt))
-      #place(left + top, line(start: (x-start, y-start + chart-height), end: (x-start + chart-width, y-start + chart-height), stroke: 0.5pt))
+      #place(left + top, line(start: (x-start, y-start), end: (x-start, y-start + chart-height), stroke: t.axis-stroke))
+      #place(left + top, line(start: (x-start, y-start + chart-height), end: (x-start + chart-width, y-start + chart-height), stroke: t.axis-stroke))
 
       // Plot points
       #for pt in points {
@@ -92,26 +93,28 @@
       }
 
       // X-axis labels
-      #for i in array.range(5) {
-        let x-val = calc.round(x-min + x-range * i / 4, digits: 1)
-        let x-pos = x-start + (i / 4) * chart-width
+      #for i in array.range(t.tick-count) {
+        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
+        let x-val = calc.round(x-min + x-range * fraction, digits: 1)
+        let x-pos = x-start + fraction * chart-width
         place(
           left + top,
           dx: x-pos - 12pt,
           dy: y-start + chart-height + 8pt,
-          text(size: 7pt)[#x-val]
+          text(size: t.axis-label-size)[#x-val]
         )
       }
 
       // Y-axis labels
-      #for i in array.range(5) {
-        let y-val = calc.round(y-min + y-range * i / 4, digits: 1)
-        let y-pos = y-start + chart-height - (i / 4) * chart-height
+      #for i in array.range(t.tick-count) {
+        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
+        let y-val = calc.round(y-min + y-range * fraction, digits: 1)
+        let y-pos = y-start + chart-height - fraction * chart-height
         place(
           left + top,
           dx: 5pt,
           dy: y-pos - 5pt,
-          text(size: 7pt)[#y-val]
+          text(size: t.axis-label-size)[#y-val]
         )
       }
 
@@ -121,7 +124,7 @@
           left + bottom,
           dx: x-start + chart-width / 2 - 20pt,
           dy: -5pt,
-          text(size: 8pt)[#x-label]
+          text(size: t.axis-title-size)[#x-label]
         )
       }
 
@@ -130,7 +133,7 @@
           left + top,
           dx: -5pt,
           dy: y-start + chart-height / 2,
-          rotate(-90deg, text(size: 8pt)[#y-label])
+          rotate(-90deg, text(size: t.axis-title-size)[#y-label])
         )
       }
     ]
@@ -148,7 +151,9 @@
   point-size: 5pt,
   show-grid: true,
   show-legend: true,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let series = data.series
 
   // Get all points to find ranges
@@ -172,12 +177,7 @@
   if x-range == 0 { x-range = 1 }
   if y-range == 0 { y-range = 1 }
 
-  box(width: width, height: height + 50pt)[
-    #if title != none {
-      align(center)[*#title*]
-      v(5pt)
-    }
-
+  chart-container(width, height, title, t, extra-height: 50pt)[
     #let chart-height = height - 30pt
     #let chart-width = width - 60pt
     #let x-start = 50pt
@@ -186,21 +186,22 @@
     #box(width: width, height: chart-height + 20pt)[
       // Grid lines
       #if show-grid {
-        for i in array.range(5) {
-          let y-pos = y-start + (i / 4) * chart-height
-          place(left + top, line(start: (x-start, y-pos), end: (x-start + chart-width, y-pos), stroke: luma(230) + 0.5pt))
-          let x-pos = x-start + (i / 4) * chart-width
-          place(left + top, line(start: (x-pos, y-start), end: (x-pos, y-start + chart-height), stroke: luma(230) + 0.5pt))
+        for i in array.range(t.tick-count) {
+          let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
+          let y-pos = y-start + fraction * chart-height
+          place(left + top, line(start: (x-start, y-pos), end: (x-start + chart-width, y-pos), stroke: t.grid-stroke))
+          let x-pos = x-start + fraction * chart-width
+          place(left + top, line(start: (x-pos, y-start), end: (x-pos, y-start + chart-height), stroke: t.grid-stroke))
         }
       }
 
       // Axes
-      #place(left + top, line(start: (x-start, y-start), end: (x-start, y-start + chart-height), stroke: 0.5pt))
-      #place(left + top, line(start: (x-start, y-start + chart-height), end: (x-start + chart-width, y-start + chart-height), stroke: 0.5pt))
+      #place(left + top, line(start: (x-start, y-start), end: (x-start, y-start + chart-height), stroke: t.axis-stroke))
+      #place(left + top, line(start: (x-start, y-start + chart-height), end: (x-start + chart-width, y-start + chart-height), stroke: t.axis-stroke))
 
       // Plot points for each series
       #for (si, s) in series.enumerate() {
-        let color = get-color(si)
+        let color = get-color(t, si)
         for pt in s.points {
           let px = x-start + ((pt.at(0) - x-min) / x-range) * chart-width
           let py = y-start + chart-height - ((pt.at(1) - y-min) / y-range) * chart-height
@@ -215,33 +216,29 @@
       }
 
       // X-axis labels
-      #for i in array.range(5) {
-        let x-val = calc.round(x-min + x-range * i / 4, digits: 1)
-        let x-pos = x-start + (i / 4) * chart-width
-        place(left + top, dx: x-pos - 12pt, dy: y-start + chart-height + 8pt, text(size: 7pt)[#x-val])
+      #for i in array.range(t.tick-count) {
+        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
+        let x-val = calc.round(x-min + x-range * fraction, digits: 1)
+        let x-pos = x-start + fraction * chart-width
+        place(left + top, dx: x-pos - 12pt, dy: y-start + chart-height + 8pt, text(size: t.axis-label-size)[#x-val])
       }
 
       // Y-axis labels
-      #for i in array.range(5) {
-        let y-val = calc.round(y-min + y-range * i / 4, digits: 1)
-        let y-pos = y-start + chart-height - (i / 4) * chart-height
-        place(left + top, dx: 5pt, dy: y-pos - 5pt, text(size: 7pt)[#y-val])
+      #for i in array.range(t.tick-count) {
+        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
+        let y-val = calc.round(y-min + y-range * fraction, digits: 1)
+        let y-pos = y-start + chart-height - fraction * chart-height
+        place(left + top, dx: 5pt, dy: y-pos - 5pt, text(size: t.axis-label-size)[#y-val])
       }
     ]
 
     // Legend
     #if show-legend {
-      v(5pt)
-      align(center)[
-        #for (i, s) in series.enumerate() {
-          box(inset: 3pt)[
-            #circle(radius: 5pt, fill: get-color(i), stroke: white + 0.5pt)
-            #h(3pt)
-            #text(size: 8pt)[#s.name]
-          ]
-          h(10pt)
-        }
-      ]
+      draw-legend(
+        series.map(s => s.name),
+        t,
+        swatch-type: "circle",
+      )
     }
   ]
 }
@@ -260,7 +257,9 @@
   color: none,
   show-labels: false,
   labels: none,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   // Normalize data format
   let points = if type(data) == dictionary {
     let zipped = data.x.zip(data.y).zip(data.size)
@@ -287,14 +286,9 @@
   if y-range == 0 { y-range = 1 }
   if size-range == 0 { size-range = 1 }
 
-  let bubble-color = if color != none { color } else { get-color(0) }
+  let bubble-color = if color != none { color } else { get-color(t, 0) }
 
-  box(width: width, height: height + 30pt)[
-    #if title != none {
-      align(center)[*#title*]
-      v(5pt)
-    }
-
+  chart-container(width, height, title, t, extra-height: 30pt)[
     #let chart-height = height - 30pt
     #let chart-width = width - 60pt
     #let x-start = 50pt
@@ -303,17 +297,18 @@
     #box(width: width, height: chart-height + 20pt)[
       // Grid lines
       #if show-grid {
-        for i in array.range(5) {
-          let y-pos = y-start + (i / 4) * chart-height
-          place(left + top, line(start: (x-start, y-pos), end: (x-start + chart-width, y-pos), stroke: luma(230) + 0.5pt))
-          let x-pos = x-start + (i / 4) * chart-width
-          place(left + top, line(start: (x-pos, y-start), end: (x-pos, y-start + chart-height), stroke: luma(230) + 0.5pt))
+        for i in array.range(t.tick-count) {
+          let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
+          let y-pos = y-start + fraction * chart-height
+          place(left + top, line(start: (x-start, y-pos), end: (x-start + chart-width, y-pos), stroke: t.grid-stroke))
+          let x-pos = x-start + fraction * chart-width
+          place(left + top, line(start: (x-pos, y-start), end: (x-pos, y-start + chart-height), stroke: t.grid-stroke))
         }
       }
 
       // Axes
-      #place(left + top, line(start: (x-start, y-start), end: (x-start, y-start + chart-height), stroke: 0.5pt))
-      #place(left + top, line(start: (x-start, y-start + chart-height), end: (x-start + chart-width, y-start + chart-height), stroke: 0.5pt))
+      #place(left + top, line(start: (x-start, y-start), end: (x-start, y-start + chart-height), stroke: t.axis-stroke))
+      #place(left + top, line(start: (x-start, y-start + chart-height), end: (x-start + chart-width, y-start + chart-height), stroke: t.axis-stroke))
 
       // Plot bubbles
       #for (i, pt) in points.enumerate() {
@@ -338,28 +333,30 @@
             left + top,
             dx: px - 15pt,
             dy: py - 5pt,
-            text(size: 7pt, weight: "bold")[#labels.at(i)]
+            text(size: t.axis-label-size, weight: "bold")[#labels.at(i)]
           )
         }
       }
 
       // X-axis labels
-      #for i in array.range(5) {
-        let x-val = calc.round(x-min + x-range * i / 4, digits: 1)
-        let x-pos = x-start + (i / 4) * chart-width
-        place(left + top, dx: x-pos - 12pt, dy: y-start + chart-height + 8pt, text(size: 7pt)[#x-val])
+      #for i in array.range(t.tick-count) {
+        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
+        let x-val = calc.round(x-min + x-range * fraction, digits: 1)
+        let x-pos = x-start + fraction * chart-width
+        place(left + top, dx: x-pos - 12pt, dy: y-start + chart-height + 8pt, text(size: t.axis-label-size)[#x-val])
       }
 
       // Y-axis labels
-      #for i in array.range(5) {
-        let y-val = calc.round(y-min + y-range * i / 4, digits: 1)
-        let y-pos = y-start + chart-height - (i / 4) * chart-height
-        place(left + top, dx: 5pt, dy: y-pos - 5pt, text(size: 7pt)[#y-val])
+      #for i in array.range(t.tick-count) {
+        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
+        let y-val = calc.round(y-min + y-range * fraction, digits: 1)
+        let y-pos = y-start + chart-height - fraction * chart-height
+        place(left + top, dx: 5pt, dy: y-pos - 5pt, text(size: t.axis-label-size)[#y-val])
       }
 
       // Axis labels
       #if x-label != none {
-        place(left + bottom, dx: x-start + chart-width / 2 - 20pt, dy: -5pt, text(size: 8pt)[#x-label])
+        place(left + bottom, dx: x-start + chart-width / 2 - 20pt, dy: -5pt, text(size: t.axis-title-size)[#x-label])
       }
     ]
   ]

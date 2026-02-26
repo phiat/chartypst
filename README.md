@@ -41,6 +41,7 @@ A charting library for [Typst](https://typst.app) built entirely with native pri
 
 - **15+ chart types** for data visualization
 - **JSON data input** - load data directly from JSON files
+- **Theme system** - preset themes and custom overrides for consistent styling
 - **Customizable** - colors, sizes, labels, legends
 - **Pure Typst** - no packages or external tools needed
 
@@ -81,25 +82,24 @@ A charting library for [Typst](https://typst.app) built entirely with native pri
 
 ## Installation
 
-Copy the chart files to your project:
+### Package (when published)
 
+```typst
+#import "@preview/charting:0.1.0": *
 ```
-chart-common.typ
-chart-bar.typ
-chart-line.typ
-chart-area.typ
-chart-pie.typ
-chart-radar.typ
-chart-scatter.typ
-chart-gauge.typ
-chart-heatmap.typ
-charting.typ
+
+### Local
+
+Copy the `src/` folder into your project, then import the library entrypoint:
+
+```typst
+#import "src/lib.typ": *
 ```
 
 ## Usage
 
 ```typst
-#import "charting.typ": *
+#import "src/lib.typ": *
 
 // Load data from JSON
 #let data = json("mydata.json")
@@ -138,6 +138,36 @@ charting.typ
   title: "Character Comparison",
 )
 ```
+
+## Theming
+
+Every chart function accepts an optional `theme` parameter. Themes control colors, font sizes, grid lines, backgrounds, and other visual properties.
+
+### Using a preset theme
+
+```typst
+#import "src/lib.typ": *
+
+#bar-chart(data, theme: themes.dark)
+```
+
+### Custom overrides
+
+Pass a dictionary with only the keys you want to change. Unspecified keys fall back to the default theme:
+
+```typst
+#bar-chart(data, theme: (show-grid: true, palette: (red, blue, green)))
+```
+
+### Available presets
+
+| Preset | Description |
+|---|---|
+| `themes.default` | Tableau 10 color palette, no grid, standard font sizes |
+| `themes.minimal` | Lighter axis strokes, grid enabled, regular-weight titles |
+| `themes.dark` | Dark background (`#1a1a2e`), vibrant neon palette (cyan, pink, purple, ...) |
+| `themes.presentation` | Larger font sizes across the board for slides and projectors |
+| `themes.print` | Grayscale palette with grid lines, optimized for black-and-white printing |
 
 ## Data Formats
 
@@ -184,27 +214,58 @@ charting.typ
 
 ## Examples
 
-See `chart-demo.typ` for comprehensive examples using the included sample data files:
-- `characters.json` - RPG character data
-- `events.json` - Conference/event data
-- `analytics.json` - Dashboard analytics data
+See `examples/demo.typ` for comprehensive examples using the included sample data files in `data/`:
+- `data/characters.json` - RPG character data
+- `data/events.json` - Conference/event data
+- `data/analytics.json` - Dashboard analytics data
 
 Compile the demo:
 ```bash
-typst compile chart-demo.typ
+typst compile --root . examples/demo.typ
 ```
 
 ## Color Palette
 
-The default color palette uses Tableau 10 colors. You can access colors via:
+The default theme uses Tableau 10 colors. You can access colors from any theme via the `get-color` function:
 
 ```typst
-#import "chart-common.typ": get-color, chart-colors
+#import "src/lib.typ": get-color, themes
 
-// Get color by index (cycles through palette)
-#get-color(0)  // blue
-#get-color(1)  // orange
-#get-color(2)  // red
+// Default palette
+#get-color(themes.default, 0)  // blue
+#get-color(themes.default, 1)  // orange
+#get-color(themes.default, 2)  // red
+
+// Or use a theme preset
+#get-color(themes.dark, 0)  // cyan
+```
+
+## Project Structure
+
+```
+typst-charts/
+  src/
+    lib.typ            # Public entrypoint - re-exports everything
+    theme.typ          # Theme system and preset themes
+    util.typ           # Shared utilities
+    charts/            # One module per chart family
+      bar.typ
+      line.typ
+      area.typ
+      pie.typ
+      radar.typ
+      scatter.typ
+      gauge.typ
+      heatmap.typ
+    primitives/        # Low-level drawing helpers
+      axes.typ
+      container.typ
+      legend.typ
+      title.typ
+  examples/
+    demo.typ           # Comprehensive demo of all chart types
+  data/                # Sample JSON data files
+  screenshots/         # Gallery images
 ```
 
 ## License

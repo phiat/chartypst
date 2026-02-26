@@ -1,13 +1,13 @@
 // Chart Demo - Testing all chart types
-#import "charting.typ": *
+#import "../src/lib.typ": *
 
 #set page(margin: 1cm)
-#set text(font: "Arial", size: 10pt)
+#set text(size: 10pt)
 
 // Load JSON data
-#let chars = json("characters.json")
-#let events = json("events.json")
-#let analytics = json("analytics.json")
+#let chars = json("../data/characters.json")
+#let events = json("../data/events.json")
+#let analytics = json("../data/analytics.json")
 
 = Typst Charting Library Demo
 

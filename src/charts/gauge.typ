@@ -1,5 +1,6 @@
-// chart-gauge.typ - Gauge/dial and progress indicators
-#import "chart-common.typ": *
+// gauge.typ - Gauge/dial and progress indicators
+#import "../theme.typ": resolve-theme, get-color
+#import "../primitives/container.typ": chart-container
 
 // Gauge/dial chart (semicircle)
 #let gauge-chart(
@@ -12,7 +13,9 @@
   show-value: true,
   segments: none,  // optional: array of (threshold, color) for colored segments
   needle-color: black,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let radius = size / 2 - 10pt
   let cx = size / 2
   let cy = size / 2 + 10pt
@@ -24,12 +27,7 @@
   // Angle: -180deg (left) to 0deg (right)
   let needle-angle = -180deg + normalized * 180deg
 
-  box(width: size, height: size / 2 + 50pt)[
-    #if title != none {
-      align(center)[*#title*]
-      v(3pt)
-    }
-
+  chart-container(size, size / 2 + 20pt, title, t, extra-height: 30pt)[
     #box(width: size, height: size / 2 + 30pt)[
       // Draw segments or default arc
       #if segments != none {
@@ -124,8 +122,8 @@
       )
 
       // Min/max labels
-      #place(left + top, dx: cx - radius - 10pt, dy: cy + 5pt, text(size: 7pt)[#min-val])
-      #place(left + top, dx: cx + radius - 5pt, dy: cy + 5pt, text(size: 7pt)[#max-val])
+      #place(left + top, dx: cx - radius - 10pt, dy: cy + 5pt, text(size: t.axis-label-size)[#min-val])
+      #place(left + top, dx: cx + radius - 5pt, dy: cy + 5pt, text(size: t.axis-label-size)[#max-val])
 
       // Value display
       #if show-value {
@@ -143,7 +141,7 @@
           left + top,
           dx: cx - 30pt,
           dy: cy + 15pt,
-          text(size: 8pt, fill: gray)[#label]
+          text(size: t.value-label-size, fill: gray)[#label]
         )
       }
     ]
@@ -161,14 +159,16 @@
   color: none,
   background: luma(230),
   rounded: true,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let progress = calc.min(1, calc.max(0, value / max-val))
-  let bar-color = if color != none { color } else { get-color(0) }
+  let bar-color = if color != none { color } else { get-color(t, 0) }
   let radius = if rounded { height / 2 } else { 0pt }
 
   box(width: width, height: height + (if title != none { 20pt } else { 0pt }))[
     #if title != none {
-      text(size: 8pt)[#title]
+      text(size: t.value-label-size)[#title]
       v(3pt)
     }
 
@@ -222,16 +222,18 @@
   stroke-width: 8pt,
   color: none,
   background: luma(230),
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let progress = calc.min(1, calc.max(0, value / max-val))
-  let bar-color = if color != none { color } else { get-color(0) }
+  let bar-color = if color != none { color } else { get-color(t, 0) }
   let radius = size / 2 - stroke-width / 2
   let cx = size / 2
   let cy = size / 2
 
   box(width: size, height: size + (if title != none { 25pt } else { 0pt }))[
     #if title != none {
-      align(center, text(size: 8pt)[#title])
+      align(center, text(size: t.value-label-size)[#title])
       v(3pt)
     }
 
@@ -312,7 +314,9 @@
   title: none,
   show-values: true,
   max-val: auto,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let labels = data.labels
   let values = data.values
   let n = labels.len()
@@ -334,14 +338,14 @@
         column-gutter: 8pt,
         row-gutter: 6pt,
 
-        text(size: 7pt)[#lbl],
+        text(size: t.axis-label-size)[#lbl],
 
         box(width: 100%, height: bar-height)[
           #rect(width: 100%, height: 100%, fill: luma(230), radius: 3pt)
-          #place(left + top, rect(width: 100% * progress, height: 100%, fill: get-color(i), radius: 3pt))
+          #place(left + top, rect(width: 100% * progress, height: 100%, fill: get-color(t, i), radius: 3pt))
         ],
 
-        if show-values { text(size: 8pt, weight: "bold")[#val] }
+        if show-values { text(size: t.value-label-size, weight: "bold")[#val] }
       )
       v(4pt)
     }

@@ -1,5 +1,9 @@
-// chart-line.typ - Line charts (single and multi-series)
-#import "chart-common.typ": *
+// line.typ - Line charts (single and multi-series)
+#import "../theme.typ": resolve-theme, get-color
+#import "../util.typ": normalize-data
+#import "../primitives/container.typ": chart-container
+#import "../primitives/axes.typ": draw-grid, draw-axis-titles
+#import "../primitives/legend.typ": draw-legend
 
 // Single line chart
 #let line-chart(
@@ -12,7 +16,11 @@
   line-width: 1.5pt,
   point-size: 4pt,
   fill-area: false,
+  x-label: none,
+  y-label: none,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values
@@ -24,18 +32,16 @@
 
   let n = values.len()
 
-  box(width: width, height: height + 30pt)[
-    #if title != none {
-      align(center)[*#title*]
-      v(5pt)
-    }
-
+  chart-container(width, height, title, t, extra-height: 30pt)[
     #let chart-height = height - 20pt
     #let chart-width = width - 50pt
 
     #box(width: width, height: chart-height)[
-      #place(left + top, line(start: (40pt, 0pt), end: (40pt, chart-height), stroke: 0.5pt))
-      #place(left + bottom, line(start: (40pt, 0pt), end: (width, 0pt), stroke: 0.5pt))
+      // Grid (no-op by default)
+      #draw-grid(40pt, 0pt, chart-width, chart-height, t)
+
+      #place(left + top, line(start: (40pt, 0pt), end: (40pt, chart-height), stroke: t.axis-stroke))
+      #place(left + bottom, line(start: (40pt, 0pt), end: (width, 0pt), stroke: t.axis-stroke))
 
       #let points = ()
       #for (i, val) in values.enumerate() {
@@ -52,7 +58,7 @@
           line(
             start: (p1.at(0), p1.at(1)),
             end: (p2.at(0), p2.at(1)),
-            stroke: line-width + get-color(0),
+            stroke: line-width + get-color(t, 0),
           )
         )
       }
@@ -63,7 +69,7 @@
             left + top,
             dx: pt.at(0) - point-size / 2,
             dy: pt.at(1) - point-size / 2,
-            circle(radius: point-size / 2, fill: get-color(0), stroke: white + 1pt)
+            circle(radius: point-size / 2, fill: get-color(t, 0), stroke: white + 1pt)
           )
 
           if show-values {
@@ -71,7 +77,7 @@
               left + top,
               dx: pt.at(0) - 10pt,
               dy: pt.at(1) - 15pt,
-              text(size: 7pt)[#values.at(i)]
+              text(size: t.axis-label-size)[#values.at(i)]
             )
           }
         }
@@ -83,20 +89,24 @@
           left + bottom,
           dx: x - 15pt,
           dy: 10pt,
-          text(size: 7pt)[#lbl]
+          text(size: t.axis-label-size)[#lbl]
         )
       }
 
-      #for i in array.range(5) {
-        let y-val = calc.round(min-val + val-range * i / 4, digits: 1)
-        let y-pos = chart-height - (i / 4) * (chart-height - 20pt) - 10pt
+      #for i in array.range(t.tick-count) {
+        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
+        let y-val = calc.round(min-val + val-range * fraction, digits: 1)
+        let y-pos = chart-height - fraction * (chart-height - 20pt) - 10pt
         place(
           left + top,
           dx: 5pt,
           dy: y-pos - 5pt,
-          text(size: 7pt)[#y-val]
+          text(size: t.axis-label-size)[#y-val]
         )
       }
+
+      // Axis titles
+      #draw-axis-titles(x-label, y-label, 40pt + chart-width / 2, chart-height / 2, t)
     ]
   ]
 }
@@ -109,7 +119,11 @@
   title: none,
   show-points: true,
   show-legend: true,
+  x-label: none,
+  y-label: none,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let labels = data.labels
   let series = data.series
 
@@ -121,22 +135,20 @@
 
   let n = labels.len()
 
-  box(width: width, height: height + 50pt)[
-    #if title != none {
-      align(center)[*#title*]
-      v(5pt)
-    }
-
+  chart-container(width, height, title, t, extra-height: 50pt)[
     #let chart-height = height - 20pt
     #let chart-width = width - 50pt
 
     #box(width: width, height: chart-height)[
-      #place(left + top, line(start: (40pt, 0pt), end: (40pt, chart-height), stroke: 0.5pt))
-      #place(left + bottom, line(start: (40pt, 0pt), end: (width, 0pt), stroke: 0.5pt))
+      // Grid (no-op by default)
+      #draw-grid(40pt, 0pt, chart-width, chart-height, t)
+
+      #place(left + top, line(start: (40pt, 0pt), end: (40pt, chart-height), stroke: t.axis-stroke))
+      #place(left + bottom, line(start: (40pt, 0pt), end: (width, 0pt), stroke: t.axis-stroke))
 
       #for (si, s) in series.enumerate() {
         let values = s.values
-        let color = get-color(si)
+        let color = get-color(t, si)
 
         let points = ()
         for (i, val) in values.enumerate() {
@@ -176,34 +188,28 @@
           left + bottom,
           dx: x - 15pt,
           dy: 10pt,
-          text(size: 7pt)[#lbl]
+          text(size: t.axis-label-size)[#lbl]
         )
       }
 
-      #for i in array.range(5) {
-        let y-val = calc.round(min-val + val-range * i / 4, digits: 1)
-        let y-pos = chart-height - (i / 4) * (chart-height - 20pt) - 10pt
+      #for i in array.range(t.tick-count) {
+        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
+        let y-val = calc.round(min-val + val-range * fraction, digits: 1)
+        let y-pos = chart-height - fraction * (chart-height - 20pt) - 10pt
         place(
           left + top,
           dx: 5pt,
           dy: y-pos - 5pt,
-          text(size: 7pt)[#y-val]
+          text(size: t.axis-label-size)[#y-val]
         )
       }
+
+      // Axis titles
+      #draw-axis-titles(x-label, y-label, 40pt + chart-width / 2, chart-height / 2, t)
     ]
 
     #if show-legend {
-      v(5pt)
-      align(center)[
-        #for (i, s) in series.enumerate() {
-          box(inset: 3pt)[
-            #box(width: 15pt, height: 2pt, fill: get-color(i), baseline: -2pt)
-            #h(3pt)
-            #text(size: 8pt)[#s.name]
-          ]
-          h(10pt)
-        }
-      ]
+      draw-legend(series.map(s => s.name), t, swatch-type: "line")
     }
   ]
 }

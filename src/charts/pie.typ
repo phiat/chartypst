@@ -1,5 +1,8 @@
-// chart-pie.typ - Pie and donut charts
-#import "chart-common.typ": *
+// pie.typ - Pie and donut charts
+#import "../theme.typ": resolve-theme, get-color
+#import "../util.typ": normalize-data
+#import "../primitives/container.typ": chart-container
+#import "../primitives/legend.typ": draw-legend-vertical
 
 #let pie-chart(
   data,
@@ -9,7 +12,9 @@
   show-percentages: true,
   donut: false,
   donut-ratio: 0.5,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values
@@ -24,12 +29,7 @@
   // Total width: pie + gap + legend (if shown)
   let total-width = size + (if show-legend { 20pt + legend-width } else { 0pt })
 
-  box(width: total-width, height: size + 40pt)[
-    #if title != none {
-      align(center)[*#title*]
-      v(5pt)
-    }
-
+  chart-container(total-width, size, title, t, extra-height: 40pt)[
     // Use a grid layout to keep pie and legend separate
     #grid(
       columns: if show-legend { (size, legend-width) } else { (size,) },
@@ -56,7 +56,7 @@
           place(
             left + top,
             polygon(
-              fill: get-color(i),
+              fill: get-color(t, i),
               stroke: white + 1pt,
               ..pts.map(p => (p.at(0), p.at(1)))
             )
@@ -75,7 +75,7 @@
                 left + top,
                 dx: lx,
                 dy: ly,
-                text(size: 8pt, fill: white, weight: "bold")[#pct%]
+                text(size: t.value-label-size, fill: white, weight: "bold")[#pct%]
               )
             }
           }
@@ -101,9 +101,9 @@
           #for (i, lbl) in labels.enumerate() {
             let pct = calc.round((values.at(i) / total) * 100, digits: 1)
             box(inset: (x: 0pt, y: 2pt))[
-              #box(width: 12pt, height: 12pt, fill: get-color(i), baseline: 2pt, radius: 2pt)
+              #box(width: t.legend-swatch-size, height: t.legend-swatch-size, fill: get-color(t, i), baseline: 2pt, radius: 2pt)
               #h(6pt)
-              #text(size: 8pt)[#lbl (#pct%)]
+              #text(size: t.legend-size)[#lbl (#pct%)]
             ]
             linebreak()
           }

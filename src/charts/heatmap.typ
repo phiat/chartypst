@@ -1,46 +1,7 @@
-// chart-heatmap.typ - Heatmap/matrix charts
-#import "chart-common.typ": *
-
-// Color interpolation helper
-#let lerp-color(c1, c2, t) = {
-  // t should be 0-1
-  let t-clamped = calc.max(0, calc.min(1, t))
-  color.mix((c1, (1 - t-clamped) * 100%), (c2, t-clamped * 100%))
-}
-
-// Get heatmap color based on value (0-1)
-#let heat-color(val, palette: "viridis") = {
-  let v = calc.max(0, calc.min(1, val))
-
-  if palette == "viridis" {
-    // Purple -> Blue -> Teal -> Green -> Yellow
-    if v < 0.25 {
-      lerp-color(rgb("#440154"), rgb("#3b528b"), v * 4)
-    } else if v < 0.5 {
-      lerp-color(rgb("#3b528b"), rgb("#21918c"), (v - 0.25) * 4)
-    } else if v < 0.75 {
-      lerp-color(rgb("#21918c"), rgb("#5ec962"), (v - 0.5) * 4)
-    } else {
-      lerp-color(rgb("#5ec962"), rgb("#fde725"), (v - 0.75) * 4)
-    }
-  } else if palette == "heat" {
-    // Blue -> Cyan -> Green -> Yellow -> Red
-    if v < 0.25 {
-      lerp-color(rgb("#313695"), rgb("#74add1"), v * 4)
-    } else if v < 0.5 {
-      lerp-color(rgb("#74add1"), rgb("#a6d96a"), (v - 0.25) * 4)
-    } else if v < 0.75 {
-      lerp-color(rgb("#a6d96a"), rgb("#fdae61"), (v - 0.5) * 4)
-    } else {
-      lerp-color(rgb("#fdae61"), rgb("#a50026"), (v - 0.75) * 4)
-    }
-  } else if palette == "grayscale" {
-    luma(int((1 - v) * 255))
-  } else {
-    // Default blue gradient
-    lerp-color(rgb("#f7fbff"), rgb("#08306b"), v)
-  }
-}
+// heatmap.typ - Heatmap/matrix charts
+#import "../theme.typ": resolve-theme, get-color
+#import "../util.typ": lerp-color, heat-color
+#import "../primitives/container.typ": chart-container
 
 // Heatmap chart
 #let heatmap(
@@ -50,7 +11,9 @@
   show-values: true,
   palette: "viridis",
   show-legend: true,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let rows = data.rows
   let cols = data.cols
   let values = data.values
@@ -72,12 +35,7 @@
   let grid-width = n-cols * cell-size
   let grid-height = n-rows * cell-size
 
-  box(width: row-label-width + grid-width + legend-width + 20pt, height: col-label-height + grid-height + 40pt)[
-    #if title != none {
-      align(center)[*#title*]
-      v(5pt)
-    }
-
+  chart-container(row-label-width + grid-width + legend-width + 20pt, col-label-height + grid-height, title, t, extra-height: 40pt)[
     #box[
       // Column labels (rotated)
       #for (j, col) in cols.enumerate() {
@@ -85,7 +43,7 @@
           left + top,
           dx: row-label-width + j * cell-size + cell-size / 2 - 5pt,
           dy: 5pt,
-          rotate(-45deg, origin: bottom + left, text(size: 7pt)[#col])
+          rotate(-45deg, origin: bottom + left, text(size: t.axis-label-size)[#col])
         )
       }
 
@@ -96,7 +54,7 @@
           left + top,
           dx: 5pt,
           dy: col-label-height + i * cell-size + cell-size / 2 - 5pt,
-          text(size: 7pt)[#row]
+          text(size: t.axis-label-size)[#row]
         )
 
         // Cells for this row
@@ -123,7 +81,7 @@
               left + top,
               dx: row-label-width + j * cell-size + cell-size / 2 - 8pt,
               dy: col-label-height + i * cell-size + cell-size / 2 - 5pt,
-              text(size: 7pt, fill: text-color)[#calc.round(val, digits: 1)]
+              text(size: t.axis-label-size, fill: text-color)[#calc.round(val, digits: 1)]
             )
           }
         }
@@ -153,8 +111,8 @@
         }
 
         // Legend labels
-        place(left + top, dx: legend-x + 20pt, dy: legend-y - 5pt, text(size: 7pt)[#calc.round(max-val, digits: 1)])
-        place(left + top, dx: legend-x + 20pt, dy: legend-y + legend-height - 5pt, text(size: 7pt)[#calc.round(min-val, digits: 1)])
+        place(left + top, dx: legend-x + 20pt, dy: legend-y - 5pt, text(size: t.axis-label-size)[#calc.round(max-val, digits: 1)])
+        place(left + top, dx: legend-x + 20pt, dy: legend-y + legend-height - 5pt, text(size: t.axis-label-size)[#calc.round(min-val, digits: 1)])
       }
     ]
   ]
@@ -168,7 +126,9 @@
   palette: "heat",
   show-month-labels: true,
   show-day-labels: true,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let dates = data.dates
   let values = data.values
   let n = dates.len()
@@ -186,12 +146,7 @@
   let day-label-width = if show-day-labels { 25pt } else { 0pt }
   let month-label-height = if show-month-labels { 20pt } else { 0pt }
 
-  box(width: day-label-width + n-weeks * cell-size + 20pt, height: month-label-height + 7 * cell-size + 40pt)[
-    #if title != none {
-      align(center)[*#title*]
-      v(5pt)
-    }
-
+  chart-container(day-label-width + n-weeks * cell-size + 20pt, month-label-height + 7 * cell-size, title, t, extra-height: 40pt)[
     #box[
       // Day labels (Mon, Wed, Fri)
       #if show-day-labels {
@@ -252,7 +207,9 @@
   cell-size: 35pt,
   title: none,
   show-values: true,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let labels = data.labels
   let values = data.values
   let n = labels.len()
@@ -269,12 +226,7 @@
     }
   }
 
-  box(width: label-area + n * cell-size + 20pt, height: label-area + n * cell-size + 40pt)[
-    #if title != none {
-      align(center)[*#title*]
-      v(5pt)
-    }
-
+  chart-container(label-area + n * cell-size + 20pt, label-area + n * cell-size, title, t, extra-height: 40pt)[
     #box[
       // Column labels
       #for (j, lbl) in labels.enumerate() {
@@ -282,7 +234,7 @@
           left + top,
           dx: label-area + j * cell-size + cell-size / 2 - 10pt,
           dy: 5pt,
-          rotate(-45deg, origin: bottom + left, text(size: 7pt)[#lbl])
+          rotate(-45deg, origin: bottom + left, text(size: t.axis-label-size)[#lbl])
         )
       }
 
@@ -293,7 +245,7 @@
           left + top,
           dx: 5pt,
           dy: label-area + i * cell-size + cell-size / 2 - 5pt,
-          text(size: 7pt)[#row-lbl]
+          text(size: t.axis-label-size)[#row-lbl]
         )
 
         // Cells
@@ -318,7 +270,7 @@
               left + top,
               dx: label-area + j * cell-size + cell-size / 2 - 10pt,
               dy: label-area + i * cell-size + cell-size / 2 - 5pt,
-              text(size: 7pt, fill: text-color)[#calc.round(val, digits: 2)]
+              text(size: t.axis-label-size, fill: text-color)[#calc.round(val, digits: 2)]
             )
           }
         }

@@ -1,5 +1,7 @@
-// chart-radar.typ - Radar/spider charts
-#import "chart-common.typ": *
+// radar.typ - Radar/spider charts
+#import "../theme.typ": resolve-theme, get-color
+#import "../primitives/container.typ": chart-container
+#import "../primitives/legend.typ": draw-legend-vertical
 
 #let radar-chart(
   data,
@@ -8,7 +10,9 @@
   show-legend: true,
   show-value-labels: true,
   fill-opacity: 30%,
+  theme: none,
 ) = {
+  let t = resolve-theme(theme)
   let labels = data.labels
   let series = data.series
   let n = labels.len()
@@ -22,12 +26,7 @@
   // Calculate legend width
   let legend-width = if show-legend and series.len() > 1 { 100pt } else { 0pt }
 
-  box(width: size + legend-width, height: size + 40pt)[
-    #if title != none {
-      align(center)[*#title*]
-      v(5pt)
-    }
-
+  chart-container(size + legend-width, size, title, t, extra-height: 40pt)[
     #grid(
       columns: if legend-width > 0pt { (size, legend-width) } else { (size,) },
 
@@ -50,7 +49,7 @@
             left + top,
             polygon(
               fill: none,
-              stroke: luma(200) + 0.5pt,
+              stroke: t.grid-stroke,
               ..pts.map(p => (p.at(0), p.at(1)))
             )
           )
@@ -100,7 +99,7 @@
             left + top,
             dx: lx + anchor-x,
             dy: ly + anchor-y,
-            text(size: 8pt, weight: "medium")[#lbl]
+            text(size: t.value-label-size, weight: "medium")[#lbl]
           )
         }
 
@@ -116,7 +115,7 @@
             ))
           }
 
-          let color = get-color(si)
+          let color = get-color(t, si)
 
           // Filled area
           place(
@@ -146,7 +145,7 @@
                 left + top,
                 dx: pt.at(0) + offset-x - 8pt,
                 dy: pt.at(1) + offset-y - 5pt,
-                text(size: 7pt, fill: color, weight: "bold")[#s.values.at(i)]
+                text(size: t.axis-label-size, fill: color, weight: "bold")[#s.values.at(i)]
               )
             }
           }
@@ -159,9 +158,9 @@
           #v(20pt)
           #for (i, s) in series.enumerate() {
             box(inset: (x: 5pt, y: 3pt))[
-              #box(width: 12pt, height: 12pt, fill: get-color(i), baseline: 2pt, radius: 2pt)
+              #box(width: t.legend-swatch-size, height: t.legend-swatch-size, fill: get-color(t, i), baseline: 2pt, radius: 2pt)
               #h(6pt)
-              #text(size: 8pt)[#s.name]
+              #text(size: t.legend-size)[#s.name]
             ]
             linebreak()
           }
