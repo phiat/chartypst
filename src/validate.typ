@@ -160,6 +160,36 @@
   validate-simple-data(data, chart-name)
 }
 
+// Validate grouped-stacked data (labels + groups, each with name + segments)
+#let validate-grouped-stacked-data(data, chart-name) = {
+  assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
+  assert("labels" in data, message: chart-name + ": data must have 'labels' key")
+  assert("groups" in data, message: chart-name + ": data must have 'groups' key")
+  assert(data.labels.len() > 0, message: chart-name + ": labels must not be empty")
+  assert(data.groups.len() > 0, message: chart-name + ": groups must not be empty")
+  let n-labels = data.labels.len()
+  for (gi, g) in data.groups.enumerate() {
+    assert(type(g) == dictionary,
+      message: chart-name + ": groups[" + str(gi) + "] must be a dictionary")
+    assert("name" in g,
+      message: chart-name + ": groups[" + str(gi) + "] must have 'name' key")
+    assert("segments" in g,
+      message: chart-name + ": groups[" + str(gi) + "] must have 'segments' key")
+    assert(g.segments.len() > 0,
+      message: chart-name + ": groups[" + str(gi) + "] must have at least one segment")
+    for (si, seg) in g.segments.enumerate() {
+      assert(type(seg) == dictionary,
+        message: chart-name + ": groups[" + str(gi) + "].segments[" + str(si) + "] must be a dictionary")
+      assert("name" in seg,
+        message: chart-name + ": groups[" + str(gi) + "].segments[" + str(si) + "] must have 'name' key")
+      assert("values" in seg,
+        message: chart-name + ": groups[" + str(gi) + "].segments[" + str(si) + "] must have 'values' key")
+      assert(seg.values.len() == n-labels,
+        message: chart-name + ": segment '" + seg.name + "' has " + str(seg.values.len()) + " values but " + str(n-labels) + " labels")
+    }
+  }
+}
+
 // Validate multi-scatter data
 #let validate-multi-scatter-data(data, chart-name) = {
   assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")

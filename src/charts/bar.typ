@@ -1,7 +1,7 @@
-// bar.typ - Bar charts (simple, horizontal, grouped, stacked)
+// bar.typ - Bar charts (simple, horizontal, grouped, stacked, grouped-stacked)
 #import "../theme.typ": resolve-theme, get-color
 #import "../util.typ": normalize-data
-#import "../validate.typ": validate-simple-data, validate-series-data
+#import "../validate.typ": validate-simple-data, validate-series-data, validate-grouped-stacked-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": draw-axis-lines, draw-grid, draw-axis-titles
 #import "../primitives/legend.typ": draw-legend, draw-legend-vertical
@@ -415,6 +415,156 @@
         draw-legend-vertical(series.map(s => s.name), t)
       } else {
         draw-legend(series.map(s => s.name), t)
+      }
+    }
+  ]
+}
+
+/// Renders a grouped-stacked bar chart combining side-by-side groups with
+/// stacked segments within each group.
+///
+/// - data (dictionary): Dict with `labels` (x-axis categories) and `groups`
+///   (array of dicts each with `name` and `segments`, where each segment has
+///   `name` and `values`)
+/// - width (length): Chart width
+/// - height (length): Chart height
+/// - title (none, content): Optional chart title
+/// - show-legend (bool): Show segment legend
+/// - x-label (none, content): X-axis title
+/// - y-label (none, content): Y-axis title
+/// - annotations (none, array): Optional annotation descriptors
+/// - theme (none, dictionary): Theme overrides
+/// -> content
+#let grouped-stacked-bar-chart(
+  data,
+  width: 400pt,
+  height: 250pt,
+  title: none,
+  show-legend: true,
+  x-label: none,
+  y-label: none,
+  annotations: none,
+  theme: none,
+) = {
+  validate-grouped-stacked-data(data, "grouped-stacked-bar-chart")
+  let t = resolve-theme(theme)
+  let labels = data.labels
+  let groups = data.groups
+  let n-labels = labels.len()
+  let n-groups = groups.len()
+
+  // Guard: nothing to draw
+  if n-labels == 0 or n-groups == 0 { return }
+
+  // Collect unique segment names (preserving first-seen order) for legend & colors
+  let segment-names = ()
+  for g in groups {
+    for seg in g.segments {
+      if seg.name not in segment-names {
+        segment-names.push(seg.name)
+      }
+    }
+  }
+
+  // Build a mapping from segment name -> color index
+  let seg-color-map = (:)
+  for (i, name) in segment-names.enumerate() {
+    seg-color-map.insert(name, i)
+  }
+
+  // Compute the max stacked total across all (label, group) pairs
+  let max-val = 0
+  for li in array.range(n-labels) {
+    for g in groups {
+      let total = g.segments.map(seg => seg.values.at(li)).sum()
+      if total > max-val { max-val = total }
+    }
+  }
+  if max-val == 0 { max-val = 1 }
+
+  chart-container(width, height, title, t, extra-height: 50pt)[
+    #let chart-height = height - 20pt
+    #let chart-width = width - 50pt
+
+    #box(width: width, height: chart-height)[
+      // Grid
+      #draw-grid(40pt, 0pt, chart-width, chart-height, t)
+
+      // Axes
+      #place(left + top, line(start: (40pt, 0pt), end: (40pt, chart-height), stroke: t.axis-stroke))
+      #place(left + bottom, line(start: (40pt, 0pt), end: (width, 0pt), stroke: t.axis-stroke))
+
+      // Layout: each label gets a slot; inside each slot, groups sit side by side
+      #let slot-width = chart-width / calc.max(n-labels, 1)
+      #let group-bar-width = (slot-width * 0.85) / calc.max(n-groups, 1)
+
+      #for li in array.range(n-labels) {
+        let slot-x = 45pt + li * slot-width
+        let group-start-x = slot-x + (slot-width * 0.075)
+
+        for (gi, g) in groups.enumerate() {
+          let bar-x = group-start-x + gi * group-bar-width
+          let bw = group-bar-width - 2pt
+          let y-offset = 0pt
+
+          // Stack segments within this group bar
+          for seg in g.segments {
+            let val = seg.values.at(li)
+            let bar-h = (val / max-val) * (chart-height - 10pt)
+            let ci = seg-color-map.at(seg.name)
+
+            place(
+              left + bottom,
+              dx: bar-x,
+              dy: -y-offset,
+              rect(
+                width: bw,
+                height: bar-h,
+                fill: get-color(t, ci),
+                stroke: (if t.background != none { t.background } else { white }) + 0.5pt,
+              )
+            )
+
+            y-offset = y-offset + bar-h
+          }
+        }
+
+        // X-axis label centered under the slot
+        let x-center = slot-x + slot-width / 2 - 15pt
+        place(
+          left + bottom,
+          dx: x-center,
+          dy: 12pt,
+          text(size: t.axis-label-size, fill: t.text-color)[#labels.at(li)]
+        )
+      }
+
+      // Y-axis tick labels
+      #for i in array.range(t.tick-count) {
+        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
+        let y-val = calc.round(max-val * fraction, digits: 1)
+        let y-pos = chart-height - fraction * (chart-height - 10pt)
+        place(
+          left + top,
+          dx: 5pt,
+          dy: y-pos - 5pt,
+          text(size: t.axis-label-size, fill: t.text-color)[#y-val]
+        )
+      }
+
+      // Axis titles
+      #draw-axis-titles(x-label, y-label, 40pt + chart-width / 2, chart-height / 2, t)
+
+      // Annotations
+      #draw-annotations(annotations, 45pt, 10pt, chart-width, chart-height - 10pt, -0.5, n-labels - 0.5, 0, max-val, t)
+    ]
+
+    // Legend shows segment names (consistent colors across groups)
+    #if show-legend and t.legend-position != "none" {
+      if t.legend-position == "right" {
+        draw-legend-vertical(segment-names, t)
+      } else {
+        draw-legend(segment-names, t)
       }
     }
   ]
