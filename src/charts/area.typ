@@ -56,15 +56,15 @@
 
       // Build polygon for filled area (include baseline)
       #let baseline-y = chart-height - ((0 - min-val) / val-range) * (chart-height - 20pt) - 10pt
-      #let area-pts = ()
-      // Start at baseline
-      area-pts.push((points.at(0).at(0), baseline-y))
-      // Add all data points
-      for pt in points {
-        area-pts.push(pt)
+      #let area-pts = {
+        let pts = ()
+        pts.push((points.at(0).at(0), baseline-y))
+        for pt in points {
+          pts.push(pt)
+        }
+        pts.push((points.at(n - 1).at(0), baseline-y))
+        pts
       }
-      // End at baseline
-      area-pts.push((points.at(n - 1).at(0), baseline-y))
 
       // Draw filled area
       #place(

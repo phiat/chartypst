@@ -1,6 +1,18 @@
 # Typst Charts
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Typst](https://img.shields.io/badge/typst-%3E%3D0.12.0-239dad)](https://typst.app)
+[![Charts](https://img.shields.io/badge/chart_types-25%2B-orange)](screenshots/)
+[![Pure Typst](https://img.shields.io/badge/dependencies-zero-brightgreen)]()
+
 A charting library for [Typst](https://typst.app) built entirely with native primitives (`rect`, `circle`, `line`, `polygon`, `place`). No external dependencies required.
+
+## Showcase
+
+All 25+ chart types on 2 pages (Linux kernel subsystem data):
+
+![Showcase Page 1](screenshots/showcase-1.png)
+![Showcase Page 2](screenshots/showcase-2.png)
 
 ## Gallery
 
@@ -37,9 +49,27 @@ A charting library for [Typst](https://typst.app) built entirely with native pri
 ### Calendar Heatmap
 ![Calendar Heatmap](screenshots/page-11.png)
 
+### Sparklines
+![Sparklines](screenshots/page-12.png)
+
+### Waterfall & Funnel Charts
+![Waterfall and Funnel](screenshots/page-13.png)
+
+### Box Plot
+![Box Plot](screenshots/page-14.png)
+
+### Annotations
+![Annotations](screenshots/page-15.png)
+
+### Scatter with Annotations
+![Scatter Annotations](screenshots/page-16.png)
+
+### Theme Showcase
+![Themes](screenshots/page-17.png)
+
 ## Features
 
-- **15+ chart types** for data visualization
+- **25+ chart types** for data visualization
 - **JSON data input** - load data directly from JSON files
 - **Theme system** - preset themes and custom overrides for consistent styling
 - **Customizable** - colors, sizes, labels, legends
@@ -75,10 +105,27 @@ A charting library for [Typst](https://typst.app) built entirely with native pri
 - `circular-progress` - Ring progress indicator
 - `progress-bars` - Multiple comparison bars
 
+### Sparklines (inline)
+- `sparkline` - Tiny line chart for tables and text
+- `sparkbar` - Tiny bar chart
+- `sparkdot` - Tiny dot chart
+
 ### Heatmaps
 - `heatmap` - Grid heatmap with color scale
 - `calendar-heatmap` - GitHub-style activity grid
 - `correlation-matrix` - Symmetric correlation display
+
+### Statistical
+- `waterfall-chart` - Bridge/waterfall chart with pos/neg/total segments
+- `funnel-chart` - Conversion funnel with percentages
+- `box-plot` - Box-and-whisker distribution plot
+
+### Annotations
+Overlay reference lines, bands, and labels on bar, line, and scatter charts:
+- `h-line` - Horizontal reference line (target, average, threshold)
+- `v-line` - Vertical reference line
+- `h-band` - Horizontal shaded region (goal zone, range)
+- `label` - Text label at a data point
 
 ## Installation
 
@@ -257,15 +304,22 @@ typst-charts/
       scatter.typ
       gauge.typ
       heatmap.typ
+      sparkline.typ
+      waterfall.typ
+      funnel.typ
+      boxplot.typ
     primitives/        # Low-level drawing helpers
       axes.typ
+      annotations.typ
       container.typ
       legend.typ
       title.typ
+    validate.typ       # Input validation helpers
   examples/
     demo.typ           # Comprehensive demo of all chart types
   data/                # Sample JSON data files
   screenshots/         # Gallery images
+  justfile             # Common dev commands
 ```
 
 ## License
