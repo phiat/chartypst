@@ -155,11 +155,6 @@
   }
 }
 
-// Validate waterfall data (labels + values, optional types)
-#let validate-waterfall-data(data, chart-name) = {
-  validate-simple-data(data, chart-name)
-}
-
 // Validate grouped-stacked data (labels + groups, each with name + segments)
 #let validate-grouped-stacked-data(data, chart-name) = {
   assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
@@ -271,18 +266,8 @@
     message: chart-name + ": labels (" + str(data.labels.len()) + ") and end-values (" + str(data.end-values.len()) + ") must have same length")
 }
 
-// Validate dumbbell data (labels + start-values + end-values, same length)
-#let validate-dumbbell-data(data, chart-name) = {
-  assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")
-  assert("labels" in data, message: chart-name + ": data must have 'labels' key")
-  assert("start-values" in data, message: chart-name + ": data must have 'start-values' key")
-  assert("end-values" in data, message: chart-name + ": data must have 'end-values' key")
-  assert(data.labels.len() > 0, message: chart-name + ": labels must not be empty")
-  assert(data.labels.len() == data.start-values.len(),
-    message: chart-name + ": labels (" + str(data.labels.len()) + ") and start-values (" + str(data.start-values.len()) + ") must have same length")
-  assert(data.labels.len() == data.end-values.len(),
-    message: chart-name + ": labels (" + str(data.labels.len()) + ") and end-values (" + str(data.end-values.len()) + ") must have same length")
-}
+// Validate dumbbell data — same shape as slope data
+#let validate-dumbbell-data = validate-slope-data
 
 // Validate diverging bar data (labels + left-values + right-values)
 #let validate-diverging-data(data, chart-name) = {
@@ -309,6 +294,17 @@
     assert("name" in s, message: chart-name + ": series[" + str(i) + "] must have 'name' key")
     assert("points" in s, message: chart-name + ": series[" + str(i) + "] must have 'points' key")
     assert(s.points.len() > 0, message: chart-name + ": series '" + s.name + "' must have at least one point")
+  }
+}
+
+// Validate multi-bubble data (series of (x, y, size) points)
+#let validate-multi-bubble-data(data, chart-name) = {
+  validate-multi-scatter-data(data, chart-name)
+  for (i, s) in data.series.enumerate() {
+    for (j, pt) in s.points.enumerate() {
+      assert(pt.len() >= 3,
+        message: chart-name + ": series '" + s.name + "' point[" + str(j) + "] must have at least 3 elements (x, y, size)")
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 // sparkline.typ - Tiny inline charts for tables and running text
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
 
 /// Renders a tiny inline line chart (sparkline) suitable for tables and running text.
 ///
@@ -21,8 +21,8 @@
   fill-area: false,
   stroke-width: 1pt,
   theme: none,
-) = {
-  let t = resolve-theme(theme)
+) = context {
+  let t = _resolve-ctx(theme)
   let c = if color != none { color } else { get-color(t, 0) }
   let n = values.len()
 
@@ -100,8 +100,8 @@
   color: none,
   gap: 1pt,
   theme: none,
-) = {
-  let t = resolve-theme(theme)
+) = context {
+  let t = _resolve-ctx(theme)
   let c = if color != none { color } else { get-color(t, 0) }
   let n = values.len()
 
@@ -140,8 +140,8 @@
   color: none,
   dot-size: 2.5pt,
   theme: none,
-) = {
-  let t = resolve-theme(theme)
+) = context {
+  let t = _resolve-ctx(theme)
   let c = if color != none { color } else { get-color(t, 0) }
   let n = values.len()
 
@@ -154,9 +154,11 @@
     let val-range = if val-range == 0 { 1 } else { val-range }
 
     box(width: width, height: height, baseline: -3pt)[
+      // Pad drawing area by max dot radius to prevent clipping
+      #let max-r = dot-size * 1.3
       #for i in array.range(n) {
-        let x = if n == 1 { width / 2 } else { (i / (n - 1)) * width }
-        let y = height - ((values.at(i) - min-val) / val-range) * height
+        let x = if n == 1 { width / 2 } else { max-r + (i / (n - 1)) * (width - 2 * max-r) }
+        let y = max-r + (height - 2 * max-r) - ((values.at(i) - min-val) / val-range) * (height - 2 * max-r)
         let is-last = i == n - 1
         let r = if is-last { dot-size * 1.3 } else { dot-size }
         let dot-color = if is-last { c.darken(20%) } else { c }

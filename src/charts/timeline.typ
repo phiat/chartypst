@@ -1,5 +1,5 @@
 // timeline.typ - Vertical event timeline chart
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
 #import "../validate.typ": validate-timeline-data
 #import "../primitives/container.typ": chart-container
 
@@ -24,9 +24,9 @@
   title: none,
   marker-size: 6pt,
   theme: none,
-) = {
+) = context {
   validate-timeline-data(data, "timeline-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let events = data.events
 
   // Auto-compute height from event count
@@ -58,7 +58,7 @@
         line(
           start: (0pt, 0pt),
           end: (0pt, chart-height - 20pt),
-          stroke: 1.5pt + luma(200),
+          stroke: 1.5pt + t.text-color-light,
         ),
       )
 
@@ -87,7 +87,7 @@
           line(
             start: (0pt, 0pt),
             end: (arm-length, 0pt),
-            stroke: 1pt + luma(200),
+            stroke: 1pt + t.text-color-light,
           ),
         )
 
@@ -118,10 +118,10 @@
         place(
           left + top,
           dx: text-x,
-          dy: y-pos - 10pt,
+          dy: y-pos - 1em,
           box(width: text-area-width, height: auto)[
             #set align(text-align)
-            #text(size: t.axis-label-size, fill: luma(120), weight: "medium")[#ev.date]
+            #text(size: t.axis-label-size, fill: t.text-color-light, weight: "medium")[#ev.date]
           ],
         )
 
@@ -141,10 +141,10 @@
           place(
             left + top,
             dx: text-x,
-            dy: y-pos + 16pt,
+            dy: y-pos + 1.5em,
             box(width: text-area-width, height: auto)[
               #set align(text-align)
-              #text(size: t.axis-label-size, fill: luma(100))[#ev.description]
+              #text(size: t.axis-label-size, fill: t.text-color-light)[#ev.description]
             ],
           )
         }

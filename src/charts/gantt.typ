@@ -1,7 +1,8 @@
 // gantt.typ - Gantt chart (timeline bar chart for project scheduling)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
 #import "../validate.typ": validate-gantt-data
 #import "../primitives/container.typ": chart-container
+#import "../primitives/layout.typ": density-skip, font-for-space
 
 /// Renders a Gantt chart — a timeline bar chart for project scheduling.
 ///
@@ -30,9 +31,9 @@
   show-grid: true,
   today: none,
   theme: none,
-) = {
+) = context {
   validate-gantt-data(data, "gantt-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let tasks = data.tasks
 
   // Determine time range
@@ -57,8 +58,8 @@
   }
   let has-groups = group-names.len() > 0
 
-  // Label area width for task names
-  let label-area = 100pt
+  // Label area width for task names — scale with chart width
+  let label-area = calc.min(100pt, width * 0.35)
   let timeline-width = width - label-area - 10pt
   let col-width = timeline-width / time-count
 
@@ -83,16 +84,32 @@
         }
       }
 
-      // Time labels along the bottom
+      // Time labels along the bottom — below the axis line
+      #let label-font = font-for-space(col-width, t.axis-label-size)
+      #let skip-n = density-skip(time-count, timeline-width)
+      #let rotate-labels = time-count > 8
+      #let axis-y = body-height - 20pt
+      #let label-y = axis-y + 4pt  // below the axis line
       #for (i, lbl) in time-labels.enumerate() {
-        if i < time-count {
+        if i < time-count and calc.rem(i, skip-n) == 0 {
           let x = label-area + i * col-width
-          place(
-            left + top,
-            dx: x + 2pt,
-            dy: body-height - 18pt,
-            text(size: t.axis-label-size, fill: t.text-color)[#lbl],
-          )
+          if rotate-labels {
+            place(
+              left + top,
+              dx: x + 2pt,
+              dy: label-y,
+              rotate(-45deg, origin: top + left,
+                text(size: label-font, fill: t.text-color)[#lbl]),
+            )
+          } else {
+            place(
+              left + top,
+              dx: x,
+              dy: label-y,
+              box(width: col-width,
+                align(center, text(size: label-font, fill: t.text-color)[#lbl])),
+            )
+          }
         }
       }
 

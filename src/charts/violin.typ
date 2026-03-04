@@ -1,8 +1,9 @@
 // violin.typ - Violin plot (distribution shape visualization)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
+#import "../util.typ": nonzero, nice-ceil
 #import "../validate.typ": validate-violin-data
 #import "../primitives/container.typ": chart-container
-#import "../primitives/axes.typ": draw-axis-lines, draw-y-ticks, draw-x-category-labels, draw-grid, draw-axis-titles
+#import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-y-ticks, draw-x-category-labels, draw-grid, draw-axis-titles
 
 /// Renders a violin plot showing the full density shape of distributions.
 ///
@@ -35,22 +36,14 @@
   x-label: none,
   y-label: none,
   theme: none,
-) = {
+) = context {
   validate-violin-data(data, "violin-plot")
-  let t = resolve-theme(theme)
-
-  if show-grid != auto {
-    t.insert("show-grid", show-grid)
-  }
+  let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
+  let t = _resolve-ctx(theme, overrides: grid-overrides)
 
   let labels = data.labels
   let datasets = data.datasets
   let n = labels.len()
-
-  // ── Helper: sort an array of numbers ──────────────────────────────────
-  let sort-arr(arr) = {
-    arr.sorted()
-  }
 
   // ── Helper: compute mean ──────────────────────────────────────────────
   let mean(arr) = {
@@ -101,11 +94,11 @@
       if v > global-max { global-max = v }
     }
   }
-  let val-range = global-max - global-min
-  if val-range == 0 { val-range = 1 }
-  let padding = val-range * 0.15
-  let y-min = global-min - padding
-  let y-max = global-max + padding
+  // Extend y-range slightly to contain KDE tails (10% padding)
+  let data-span = nonzero(global-max - global-min, fallback: 1.0)
+  let y-pad = data-span * 0.1
+  let y-min = calc.min(0, global-min - y-pad)
+  let y-max = nice-ceil(global-max + y-pad)
 
   // ── Compute KDE for each dataset ──────────────────────────────────────
   // Returns array of (value, density) pairs, plus the max density.
@@ -113,16 +106,14 @@
     let nn = ds.len()
     let sd = std-dev(ds)
     // Silverman's rule of thumb
-    let bw = if bandwidth != auto { bandwidth } else {
+    let bw = nonzero(if bandwidth != auto { bandwidth } else {
       1.06 * sd * calc.pow(nn, -0.2)
-    }
-    if bw == 0 { bw = 1.0 }
+    }, fallback: 1.0)
 
     let d-min = ds.first()
     let d-max = ds.last()
     // Extend range slightly beyond data for smooth tails
-    let ext = (d-max - d-min) * 0.1
-    if ext == 0 { ext = 1.0 }
+    let ext = nonzero((d-max - d-min) * 0.1, fallback: 1.0)
     let lo = d-min - ext
     let hi = d-max + ext
     let step = (hi - lo) / (samples - 1)
@@ -150,27 +141,24 @@
   let kdes = ()
   let global-max-density = 0.0
   for ds in datasets {
-    let sorted = sort-arr(ds)
+    let sorted = ds.sorted()
     let kde = compute-kde(sorted)
     kdes.push(kde)
     if kde.max-density > global-max-density {
       global-max-density = kde.max-density
     }
   }
-  if global-max-density == 0 { global-max-density = 1.0 }
+  let global-max-density = nonzero(global-max-density, fallback: 1.0)
 
   // ── Drawing ───────────────────────────────────────────────────────────
-  let pad-left = t.axis-padding-left
-  let pad-bottom = t.axis-padding-bottom
-  let pad-top = t.axis-padding-top
-  let pad-right = t.axis-padding-right
+  let cl = cartesian-layout(width, height, t)
 
-  chart-container(width, height, title, t, extra-height: 30pt)[
-    #let chart-width = width - pad-left - pad-right
-    #let chart-height = height - pad-top - pad-bottom
-
-    #let origin-x = pad-left
-    #let origin-y = pad-top + chart-height
+  chart-container(width, height, title, t, extra-height: 40pt)[
+    #let pad-top = cl.pad-top
+    #let chart-height = cl.chart-height
+    #let chart-width = cl.chart-width
+    #let origin-x = cl.origin-x
+    #let origin-y = cl.origin-y
     #let y-start = pad-top
 
     #box(width: width, height: height)[
@@ -181,20 +169,20 @@
       #draw-axis-lines(origin-x, origin-y, origin-x + chart-width, y-start, t)
 
       // Y-axis ticks
-      #draw-y-ticks(y-min, y-max, chart-height, y-start, 2pt, t, digits: 1)
+      #draw-y-ticks(y-min, y-max, chart-height, y-start, origin-x, t, digits: 1)
 
       // X-axis category labels
       #let spacing = chart-width / n
-      #draw-x-category-labels(labels, origin-x, spacing, origin-y + 4pt, t, center-offset: spacing / 2 - 10pt)
+      #draw-x-category-labels(labels, origin-x, spacing, origin-y + 4pt, t)
 
       // Axis titles
-      #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2 - 20pt, origin-y / 2, t)
+      #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, origin-y / 2, t)
 
-      // Helper: map data value to y-coordinate
-      #let y-range = y-max - y-min
-      #if y-range == 0 { y-range = 1 }
+      // Helper: map data value to y-coordinate, clamped to chart bounds
+      #let y-range = nonzero(y-max - y-min)
       #let map-y(val) = {
-        y-start + chart-height - ((val - y-min) / y-range) * chart-height
+        let raw = y-start + chart-height - ((val - y-min) / y-range) * chart-height
+        calc.max(y-start, calc.min(origin-y, raw))
       }
 
       // Draw each violin
@@ -242,7 +230,7 @@
 
         // Optional inner box-plot
         if show-box {
-          let ds-sorted = sort-arr(datasets.at(i))
+          let ds-sorted = datasets.at(i).sorted()
           let q = quartiles(ds-sorted)
           let box-half-w = max-half-w * 0.15
           let whisker-stroke = 1pt + t.text-color

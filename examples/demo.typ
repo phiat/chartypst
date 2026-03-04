@@ -22,6 +22,7 @@
   width: 400pt,
   height: 180pt,
   title: "Enemy Kills by Character",
+  y-label: "Kills",
 )
 
 #v(20pt)
@@ -35,6 +36,7 @@
   width: 400pt,
   height: 200pt,
   title: "Gold by Character (Horizontal)",
+  x-label: "Gold",
 )
 
 #pagebreak()
@@ -52,6 +54,7 @@
   width: 400pt,
   height: 200pt,
   title: "Daily Attendance Breakdown",
+  y-label: "Attendees",
 )
 
 #v(20pt)
@@ -239,6 +242,20 @@
   max-radius: 35pt,
   show-labels: true,
   labels: analytics.bubble_data.labels,
+)
+
+=== Multi-Series Bubble Chart
+#multi-bubble-chart(
+  (series: (
+    (name: "Warriors", points: ((18, 16, 50), (15, 14, 120), (20, 18, 80))),
+    (name: "Mages", points: ((8, 12, 200), (10, 10, 150), (6, 11, 300))),
+    (name: "Rogues", points: ((12, 14, 90), (14, 15, 60), (11, 13, 110))),
+  )),
+  width: 400pt,
+  height: 300pt,
+  title: "Class Comparison: HP vs AC (bubble = gold)",
+  x-label: "Hit Points",
+  y-label: "Armor Class",
 )
 
 #pagebreak()

@@ -1,8 +1,9 @@
 // histogram.typ - Histogram chart (frequency distribution of numeric data)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
+#import "../util.typ": nonzero, nice-ceil
 #import "../validate.typ": validate-histogram-data
 #import "../primitives/container.typ": chart-container
-#import "../primitives/axes.typ": draw-axis-lines, draw-grid, draw-y-ticks, draw-x-ticks, draw-axis-titles
+#import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-y-ticks, draw-x-ticks, draw-axis-titles
 
 /// Renders a histogram showing the frequency distribution of numeric data.
 ///
@@ -34,9 +35,9 @@
   x-label: none,
   y-label: none,
   theme: none,
-) = {
+) = context {
   validate-histogram-data(values, "histogram")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
 
   let n = values.len()
 
@@ -83,33 +84,32 @@
     counts.map(c => float(c))
   }
 
-  let y-max = calc.max(..y-values)
-  if y-max == 0 { y-max = 1 }
+  let y-max = nice-ceil(nonzero(calc.max(..y-values)))
 
   // Render
-  let left-pad = 40pt
-  let bottom-pad = 20pt
-  let top-pad = 10pt
-  let right-pad = 10pt
+  let cl = cartesian-layout(width, height, t)
 
   chart-container(width, height, title, t, extra-height: 30pt)[
-    #let chart-height = height - bottom-pad - top-pad
-    #let chart-width = width - left-pad - right-pad
+    #let pad-top = cl.pad-top
+    #let chart-height = cl.chart-height
+    #let chart-width = cl.chart-width
+    #let origin-x = cl.origin-x
+    #let origin-y = cl.origin-y
 
-    #box(width: width, height: height - 10pt)[
+    #box(width: width, height: height)[
       // Grid
-      #draw-grid(left-pad, top-pad, chart-width, chart-height, t)
+      #draw-grid(origin-x, pad-top, chart-width, chart-height, t)
 
       // Axes
-      #draw-axis-lines(left-pad, top-pad + chart-height, left-pad + chart-width, top-pad, t)
+      #draw-axis-lines(origin-x, origin-y, origin-x + chart-width, pad-top, t)
 
       // Draw bars (no gaps — contiguous)
       #let bar-w = chart-width / num-bins
       #for bi in array.range(num-bins) {
         let val = y-values.at(bi)
         let bar-h = (val / y-max) * chart-height
-        let x-pos = left-pad + bi * bar-w
-        let y-pos = top-pad + chart-height - bar-h
+        let x-pos = origin-x + bi * bar-w
+        let y-pos = pad-top + chart-height - bar-h
 
         let fill-color = if color != none { color } else { get-color(t, 0) }
 
@@ -129,21 +129,22 @@
           let count-val = counts.at(bi)
           place(
             left + top,
-            dx: x-pos + bar-w / 2 - 6pt,
-            dy: y-pos - 12pt,
-            text(size: t.value-label-size, fill: t.text-color)[#count-val]
+            dx: x-pos,
+            dy: y-pos - 1.2em,
+            box(width: bar-w,
+              align(center, text(size: t.value-label-size, fill: t.text-color)[#count-val]))
           )
         }
       }
 
       // Y-axis ticks
-      #draw-y-ticks(0, y-max, chart-height, top-pad, 2pt, t, digits: if density { 3 } else { 1 })
+      #draw-y-ticks(0, y-max, chart-height, pad-top, origin-x, t, digits: if density { 3 } else { 1 })
 
       // X-axis ticks (numeric)
-      #draw-x-ticks(data-min, data-max, chart-width, left-pad, top-pad + chart-height + 5pt, t, digits: 1)
+      #draw-x-ticks(data-min, data-max, chart-width, origin-x, origin-y + 4pt, t, digits: 1)
 
       // Axis titles
-      #draw-axis-titles(x-label, y-label, left-pad + chart-width / 2, top-pad + chart-height / 2, t)
+      #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, pad-top + chart-height / 2, t)
     ]
   ]
 }

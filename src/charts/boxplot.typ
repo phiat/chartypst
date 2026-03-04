@@ -1,8 +1,9 @@
 // boxplot.typ - Box-and-whisker plot
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
+#import "../util.typ": nonzero, nice-ceil
 #import "../validate.typ": validate-boxplot-data
 #import "../primitives/container.typ": chart-container
-#import "../primitives/axes.typ": draw-axis-lines, draw-y-ticks, draw-x-category-labels, draw-grid, draw-axis-titles
+#import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-y-ticks, draw-x-category-labels, draw-grid, draw-axis-titles
 
 /// Renders a box-and-whisker plot for comparing distributions.
 ///
@@ -28,14 +29,10 @@
   x-label: none,
   y-label: none,
   theme: none,
-) = {
+) = context {
   validate-boxplot-data(data, "box-plot")
-  let t = resolve-theme(theme)
-
-  // Apply show-grid override
-  if show-grid != auto {
-    t.insert("show-grid", show-grid)
-  }
+  let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
+  let t = _resolve-ctx(theme, overrides: grid-overrides)
 
   let labels = data.labels
   let boxes = data.boxes
@@ -49,22 +46,17 @@
     if b.max > global-max { global-max = b.max }
   }
   // Add padding to range
-  let val-range = global-max - global-min
-  let padding = val-range * 0.1
-  let y-min = global-min - padding
-  let y-max = global-max + padding
+  let y-min = calc.min(0, global-min)
+  let y-max = nice-ceil(global-max)
 
-  let pad-left = t.axis-padding-left
-  let pad-bottom = t.axis-padding-bottom
-  let pad-top = t.axis-padding-top
-  let pad-right = t.axis-padding-right
+  let cl = cartesian-layout(width, height, t)
 
   chart-container(width, height, title, t, extra-height: 30pt)[
-    #let chart-width = width - pad-left - pad-right
-    #let chart-height = height - pad-top - pad-bottom
-
-    #let origin-x = pad-left
-    #let origin-y = pad-top + chart-height
+    #let pad-top = cl.pad-top
+    #let chart-height = cl.chart-height
+    #let chart-width = cl.chart-width
+    #let origin-x = cl.origin-x
+    #let origin-y = cl.origin-y
     #let y-start = pad-top
 
     #box(width: width, height: height)[
@@ -75,14 +67,14 @@
       #draw-axis-lines(origin-x, origin-y, origin-x + chart-width, y-start, t)
 
       // Y-axis ticks
-      #draw-y-ticks(y-min, y-max, chart-height, y-start, 2pt, t, digits: 0)
+      #draw-y-ticks(y-min, y-max, chart-height, y-start, origin-x, t, digits: 0)
 
       // X-axis category labels
       #let spacing = chart-width / n
       #draw-x-category-labels(labels, origin-x, spacing, origin-y + 4pt, t, center-offset: spacing / 2 - 10pt)
 
       // Axis titles
-      #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2 - 20pt, origin-y / 2, t)
+      #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, origin-y / 2, t)
 
       // Draw each box
       #for (i, b) in boxes.enumerate() {
@@ -99,8 +91,7 @@
 
         // Helper: map a data value to y-coordinate
         // y = y-start + chart-height - ((val - y-min) / (y-max - y-min)) * chart-height
-        let y-range = y-max - y-min
-        if y-range == 0 { y-range = 1 }
+        let y-range = nonzero(y-max - y-min)
         let map-y(val) = {
           y-start + chart-height - ((val - y-min) / y-range) * chart-height
         }

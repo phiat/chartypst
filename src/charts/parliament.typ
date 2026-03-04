@@ -1,8 +1,9 @@
 // parliament.typ - Semicircular parliament/seat chart
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
 #import "../util.typ": normalize-data
 #import "../validate.typ": validate-simple-data
 #import "../primitives/container.typ": chart-container
+#import "../primitives/legend.typ": draw-legend-vertical
 
 /// Renders a parliament (hemicycle) chart — a semicircle of dots showing seat distribution.
 ///
@@ -25,9 +26,9 @@
   title: none,
   show-legend: true,
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "parliament-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values
@@ -126,50 +127,39 @@
     }
   }
 
-  // Calculate legend height
-  let legend-height = if show-legend { 12pt * n-parties + 20pt } else { 0pt }
   let chart-height = radius + dot-r
-  let total-height = chart-height + legend-height
+  let legend-height = if show-legend { calc.ceil(n-parties / 3) * 16pt + 10pt } else { 0pt }
 
-  let legend-width = 140pt
-  let total-width = size + (if show-legend { 20pt + legend-width } else { 0pt })
+  chart-container(size, chart-height + legend-height, title, t, extra-height: 40pt)[
+    // Hemicycle
+    #box(width: size, height: chart-height)[
+      #for (i, pos) in dots.enumerate() {
+        if i < dot-colors.len() {
+          place(
+            left + top,
+            dx: pos.at(0) - dot-r,
+            dy: pos.at(1) - dot-r,
+            circle(radius: dot-r, fill: dot-colors.at(i), stroke: none)
+          )
+        }
+      }
+    ]
 
-  chart-container(total-width, total-height, title, t, extra-height: 40pt)[
-    #grid(
-      columns: if show-legend { (size, legend-width) } else { (size,) },
-      column-gutter: 20pt,
-
-      // Hemicycle
-      box(width: size, height: chart-height)[
-        #for (i, pos) in dots.enumerate() {
-          if i < dot-colors.len() {
-            place(
-              left + top,
-              dx: pos.at(0) - dot-r,
-              dy: pos.at(1) - dot-r,
-              circle(radius: dot-r, fill: dot-colors.at(i), stroke: none)
-            )
+    // Legend below hemicycle — compact horizontal flow
+    #if show-legend {
+      set text(size: t.axis-label-size, fill: t.text-color)
+      box(width: size, inset: (top: 6pt))[
+        #set align(center)
+        #for (i, lbl) in labels.enumerate() {
+          if values.at(i) > 0 {
+            box(baseline: 2pt, inset: (x: 4pt, y: 1pt))[
+              #box(width: 8pt, height: 8pt, fill: get-color(t, i), radius: 2pt, baseline: 1pt)
+              #h(3pt)
+              #lbl (#{ str(values.at(i)) })
+            ]
           }
         }
-      ],
-
-      // Legend
-      if show-legend {
-        box(width: legend-width)[
-          #v(10pt)
-          #for (i, lbl) in labels.enumerate() {
-            let count = values.at(i)
-            if count > 0 {
-              box(inset: (x: 0pt, y: 2pt))[
-                #box(width: t.legend-swatch-size, height: t.legend-swatch-size, fill: get-color(t, i), baseline: 2pt, radius: 2pt)
-                #h(6pt)
-                #text(size: t.legend-size, fill: t.text-color)[#lbl (#count)]
-              ]
-              linebreak()
-            }
-          }
-        ]
-      }
-    )
+      ]
+    }
   ]
 }

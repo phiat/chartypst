@@ -56,6 +56,14 @@
   }
 }
 
+/// Returns the value unchanged if non-zero, otherwise returns `fallback`.
+/// Prevents division-by-zero in range calculations.
+///
+/// - val (int, float): Value to check
+/// - fallback (int, float): Returned when `val` is zero
+/// -> int, float
+#let nonzero(val, fallback: 1) = if val == 0 { fallback } else { val }
+
 /// Clamps a numeric value to the range [lo, hi].
 ///
 /// - val (int, float): Value to clamp
@@ -162,6 +170,79 @@
     agg-values.push(result)
   }
   (labels: data.labels, values: agg-values)
+}
+
+/// Rounds a value up to the next "nice" number for axis scaling.
+/// Uses the standard nice-number algorithm (similar to D3/matplotlib).
+///
+/// - val (int, float): Value to round up
+/// -> int, float
+#let nice-ceil(val) = {
+  if val <= 0 { return val }
+  let exp = calc.floor(calc.log(val, base: 10))
+  let base = calc.pow(10, exp)
+  let frac = val / base
+  // Pick the next nice fraction: 1, 1.5, 2, 2.5, 3, 4, 5, 7, 10
+  let nice = if frac <= 1 { 1 }
+    else if frac <= 1.5 { 1.5 }
+    else if frac <= 2 { 2 }
+    else if frac <= 2.5 { 2.5 }
+    else if frac <= 3 { 3 }
+    else if frac <= 4 { 4 }
+    else if frac <= 5 { 5 }
+    else if frac <= 7 { 7 }
+    else { 10 }
+  nice * base
+}
+
+/// Rounds a value down to the previous "nice" number for axis scaling.
+///
+/// - val (int, float): Value to round down
+/// -> int, float
+#let nice-floor(val) = {
+  if val <= 0 { return 0 }
+  let exp = calc.floor(calc.log(val, base: 10))
+  let base = calc.pow(10, exp)
+  let frac = val / base
+  let nice = if frac >= 10 { 10 }
+    else if frac >= 7 { 7 }
+    else if frac >= 5 { 5 }
+    else if frac >= 4 { 4 }
+    else if frac >= 3 { 3 }
+    else if frac >= 2.5 { 2.5 }
+    else if frac >= 2 { 2 }
+    else if frac >= 1.5 { 1.5 }
+    else { 1 }
+  nice * base
+}
+
+/// Computes nice-rounded (min, max, range) for a numeric array.
+/// Returns a dictionary with `min`, `max`, and `range` (nonzero-guarded) keys.
+///
+/// - vals (array): Array of numbers
+/// -> dictionary
+#let numeric-range(vals) = {
+  let lo = nice-floor(calc.min(..vals))
+  let hi = nice-ceil(calc.max(..vals))
+  (min: lo, max: hi, range: nonzero(hi - lo))
+}
+
+/// Returns day-of-week for a "YYYY-MM-DD" string (0=Mon … 6=Sun).
+///
+/// Uses Tomohiko Sakamoto's algorithm.
+///
+/// - date-str (str): Date in "YYYY-MM-DD" format
+/// -> int
+#let day-of-week(date-str) = {
+  let parts = date-str.split("-")
+  let y = int(parts.at(0))
+  let m = int(parts.at(1))
+  let d = int(parts.at(2))
+  let offsets = (0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4)
+  let yy = if m < 3 { y - 1 } else { y }
+  let dow = calc.rem(yy + calc.div-euclid(yy, 4) - calc.div-euclid(yy, 100) + calc.div-euclid(yy, 400) + offsets.at(m - 1) + d, 7)
+  // Convert from 0=Sun to 0=Mon: Sun(0)→6, Mon(1)→0, …, Sat(6)→5
+  calc.rem(dow + 6, 7)
 }
 
 /// Converts values to percentages of total, returning a new data dictionary.

@@ -1,5 +1,8 @@
 // theme.typ - Theme system for primaviz
 
+// Global theme state — set via with-theme(), read by chart functions
+#let _primaviz-theme = state("primaviz-theme", none)
+
 // Default theme — flat keys, no nesting
 #let default-theme = (
   palette: (
@@ -41,22 +44,82 @@
 )
 
 /// Merges a user's partial theme dictionary onto the default theme.
+/// An optional `overrides` dictionary is applied after the user theme,
+/// useful for per-chart parameter overrides (e.g., `show-grid: true`).
 ///
 /// - user-theme (none, dictionary): Partial theme overrides; `none` returns the default theme
+/// - overrides (none, dictionary): Additional per-call overrides applied last
 /// -> dictionary
-#let resolve-theme(user-theme) = {
-  if user-theme == none {
-    return default-theme
-  }
+#let resolve-theme(user-theme, overrides: none) = {
   let result = (:)
   for (key, val) in default-theme {
-    if key in user-theme {
+    if user-theme != none and key in user-theme {
       result.insert(key, user-theme.at(key))
     } else {
       result.insert(key, val)
     }
   }
+  if overrides != none {
+    for (key, val) in overrides {
+      result.insert(key, val)
+    }
+  }
   result
+}
+
+/// Context-aware theme resolver — reads from state when user-theme is none.
+/// Must be called inside a `context` block.
+///
+/// - user-theme (none, dictionary): Explicit theme overrides
+/// - overrides (none, dictionary): Additional per-call overrides
+/// -> dictionary
+#let _resolve-ctx(user-theme, overrides: none) = {
+  let effective = if user-theme != none {
+    user-theme
+  } else {
+    _primaviz-theme.get()  // may be none → falls through to default
+  }
+  let result = (:)
+  for (key, val) in default-theme {
+    if effective != none and key in effective {
+      result.insert(key, effective.at(key))
+    } else {
+      result.insert(key, val)
+    }
+  }
+  if overrides != none {
+    for (key, val) in overrides {
+      result.insert(key, val)
+    }
+  }
+  result
+}
+
+/// Sets a default theme for all charts in `body`.
+///
+/// Charts inside `body` that don't pass an explicit `theme:` parameter
+/// will use this theme instead of `themes.default`.
+///
+/// ```typst
+/// #with-theme(themes.dark)[
+///   #bar-chart(data)       // uses dark theme
+///   #pie-chart(data2)      // uses dark theme
+///   #line-chart(data3, theme: themes.minimal) // explicit override wins
+/// ]
+/// ```
+///
+/// Can also be used as a show rule for the entire document:
+/// ```typst
+/// #show: with-theme.with(themes.dark)
+/// ```
+///
+/// - theme (dictionary): Theme to use as default
+/// - body (content): Content whose charts inherit this theme
+/// -> content
+#let with-theme(theme, body) = {
+  _primaviz-theme.update(theme)
+  body
+  _primaviz-theme.update(none)
 }
 
 /// Returns a color from the theme palette, cycling if the index exceeds palette length.
@@ -71,99 +134,55 @@
 
 // --- Named preset themes ---
 
-#let minimal-theme = {
-  let t = (:)
-  for (key, val) in default-theme {
-    t.insert(key, val)
-  }
-  t.insert("axis-stroke", 0.3pt + luma(150))
-  t.insert("grid-stroke", 0.3pt + luma(240))
-  t.insert("show-grid", true)
-  t.insert("title-size", 10pt)
-  t.insert("title-weight", "regular")
-  t.insert("border", none)
-  t
-}
+// Preset themes — each is a partial override dict resolved against default-theme.
+// Usage: `chart(data, theme: minimal-theme)` or `chart(data, theme: dark-theme)`
 
-#let dark-theme = {
-  let t = (:)
-  for (key, val) in default-theme {
-    t.insert(key, val)
-  }
-  t.insert("background", rgb("#1a1a2e"))
-  t.insert("palette", (
-    rgb("#00d2ff"),
-    rgb("#ff6b6b"),
-    rgb("#c56cf0"),
-    rgb("#ffdd59"),
-    rgb("#0be881"),
-    rgb("#ff9f43"),
-    rgb("#48dbfb"),
-    rgb("#ff6348"),
-    rgb("#1dd1a1"),
-    rgb("#f368e0"),
-  ))
-  t.insert("axis-stroke", 0.5pt + rgb("#cccccc"))
-  t.insert("grid-stroke", 0.5pt + rgb("#333355"))
-  t.insert("text-color", rgb("#e0e0e0"))
-  t.insert("text-color-light", rgb("#888899"))
-  t.insert("text-color-inverse", rgb("#1a1a2e"))
-  t
-}
+#let minimal-theme = resolve-theme((
+  axis-stroke: 0.3pt + luma(150),
+  grid-stroke: 0.3pt + luma(240),
+  show-grid: true,
+  title-size: 10pt,
+  title-weight: "regular",
+  border: none,
+))
 
-#let presentation-theme = {
-  let t = (:)
-  for (key, val) in default-theme {
-    t.insert(key, val)
-  }
-  t.insert("title-size", 14pt)
-  t.insert("axis-label-size", 9pt)
-  t.insert("axis-title-size", 10pt)
-  t.insert("legend-size", 10pt)
-  t.insert("value-label-size", 10pt)
-  t.insert("legend-swatch-size", 12pt)
-  t
-}
+#let dark-theme = resolve-theme((
+  background: rgb("#1a1a2e"),
+  palette: (
+    rgb("#00d2ff"), rgb("#ff6b6b"), rgb("#c56cf0"), rgb("#ffdd59"), rgb("#0be881"),
+    rgb("#ff9f43"), rgb("#48dbfb"), rgb("#ff6348"), rgb("#1dd1a1"), rgb("#f368e0"),
+  ),
+  axis-stroke: 0.5pt + rgb("#cccccc"),
+  grid-stroke: 0.5pt + rgb("#333355"),
+  text-color: rgb("#e0e0e0"),
+  text-color-light: rgb("#888899"),
+  text-color-inverse: rgb("#1a1a2e"),
+))
 
-#let print-theme = {
-  let t = (:)
-  for (key, val) in default-theme {
-    t.insert(key, val)
-  }
-  t.insert("palette", (
-    luma(40),
-    luma(90),
-    luma(140),
-    luma(180),
-    luma(60),
-    luma(110),
-    luma(160),
-    luma(200),
-    luma(80),
-    luma(130),
-  ))
-  t.insert("show-grid", true)
-  t.insert("grid-stroke", 0.4pt + luma(200))
-  t
-}
+#let presentation-theme = resolve-theme((
+  title-size: 14pt,
+  axis-label-size: 9pt,
+  axis-title-size: 10pt,
+  legend-size: 10pt,
+  value-label-size: 10pt,
+  legend-swatch-size: 12pt,
+))
 
-#let accessible-theme = {
-  let t = (:)
-  for (key, val) in default-theme {
-    t.insert(key, val)
-  }
-  t.insert("palette", (
-    rgb("#E69F00"),
-    rgb("#56B4E9"),
-    rgb("#009E73"),
-    rgb("#F0E442"),
-    rgb("#0072B2"),
-    rgb("#D55E00"),
-    rgb("#CC79A7"),
-    rgb("#000000"),
-  ))
-  t
-}
+#let print-theme = resolve-theme((
+  palette: (
+    luma(40), luma(90), luma(140), luma(180), luma(60),
+    luma(110), luma(160), luma(200), luma(80), luma(130),
+  ),
+  show-grid: true,
+  grid-stroke: 0.4pt + luma(200),
+))
+
+#let accessible-theme = resolve-theme((
+  palette: (
+    rgb("#E69F00"), rgb("#56B4E9"), rgb("#009E73"), rgb("#F0E442"),
+    rgb("#0072B2"), rgb("#D55E00"), rgb("#CC79A7"), rgb("#000000"),
+  ),
+))
 
 #let themes = (
   default: default-theme,

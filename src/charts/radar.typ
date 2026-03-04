@@ -1,8 +1,10 @@
 // radar.typ - Radar/spider charts
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
 #import "../validate.typ": validate-series-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/legend.typ": draw-legend-vertical
+#import "../primitives/polar.typ": place-polar-label
+#import "../primitives/layout.typ": font-for-space
 
 /// Renders a radar (spider) chart for comparing series across multiple axes.
 ///
@@ -22,18 +24,22 @@
   show-value-labels: true,
   fill-opacity: 30%,
   theme: none,
-) = {
+) = context {
   validate-series-data(data, "radar-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let labels = data.labels
   let series = data.series
   let n = labels.len()
-  let radius = size / 2 - 30pt  // More padding for labels
+  let radius = size / 2 - calc.max(18pt, size * 0.22)  // Scale padding with size — more room for labels
   let cx = size / 2
+  let cy = size / 2
 
   // Find max value across all series
   let all-values = series.map(s => s.values).flatten()
   let max-val = calc.max(..all-values)
+
+  // Respect both show-legend param and theme legend-position
+  let show-legend = show-legend and t.legend-position != "none"
 
   // Calculate legend width
   let legend-width = if show-legend and series.len() > 1 { 100pt } else { 0pt }
@@ -52,7 +58,7 @@
             let angle = -90deg + (i / n) * 360deg
             pts.push((
               cx + r * calc.cos(angle),
-              cx + r * calc.sin(angle)
+              cy + r * calc.sin(angle)
             ))
           }
           pts.push(pts.at(0))
@@ -69,11 +75,12 @@
           // Value label on first axis (top)
           if show-value-labels {
             let val = calc.round(max-val * level / 4, digits: 0)
+            let grid-label-size = font-for-space(size, 6pt, ratio: 0.04)
             place(
               left + top,
-              dx: cx + 3pt,
-              dy: cx - r - 4pt,
-              text(size: 6pt, fill: t.text-color-light)[#val]
+              dx: cx + 2pt,
+              dy: cy - r - 3pt,
+              text(size: grid-label-size, fill: t.text-color-light)[#val]
             )
           }
         }
@@ -82,37 +89,23 @@
         #for (i, lbl) in labels.enumerate() {
           let angle = -90deg + (i / n) * 360deg
           let x-end = cx + radius * calc.cos(angle)
-          let y-end = cx + radius * calc.sin(angle)
+          let y-end = cy + radius * calc.sin(angle)
 
           // Axis line
           place(
             left + top,
             line(
-              start: (cx, cx),
+              start: (cx, cy),
               end: (x-end, y-end),
               stroke: t.grid-stroke
             )
           )
 
           // Label positioning - push labels outward based on angle
-          let label-dist = radius + 18pt
-          let lx = cx + label-dist * calc.cos(angle)
-          let ly = cx + label-dist * calc.sin(angle)
-
-          // Adjust text anchor based on position
-          let anchor-x = if calc.cos(angle) < -0.1 { -35pt }
-                         else if calc.cos(angle) > 0.1 { -5pt }
-                         else { -20pt }
-          let anchor-y = if calc.sin(angle) < -0.1 { -2pt }
-                         else if calc.sin(angle) > 0.1 { -10pt }
-                         else { -6pt }
-
-          place(
-            left + top,
-            dx: lx + anchor-x,
-            dy: ly + anchor-y,
-            text(size: t.value-label-size, fill: t.text-color, weight: "medium")[#lbl]
-          )
+          let label-size = font-for-space(size, t.value-label-size, min-size: 5pt, ratio: 0.055)
+          place-polar-label(cx, cy, angle.deg(), radius + 8pt,
+            text(size: label-size, fill: t.text-color, weight: "medium")[#lbl],
+            box-width: calc.max(30pt, size * 0.22))
         }
 
         // Draw data series
@@ -123,18 +116,20 @@
             let r = (val / max-val) * radius
             pts.push((
               cx + r * calc.cos(angle),
-              cx + r * calc.sin(angle)
+              cy + r * calc.sin(angle)
             ))
           }
 
           let color = get-color(t, si)
 
-          // Filled area
+          // Filled area — scale stroke with chart size
+          let stroke-w = calc.max(0.4pt, size / 250)
+          let dot-r = calc.max(1pt, size / 100)
           place(
             left + top,
             polygon(
               fill: color.transparentize(100% - fill-opacity),
-              stroke: color + 2pt,
+              stroke: color + stroke-w,
               ..pts.map(p => (p.at(0), p.at(1)))
             )
           )
@@ -143,9 +138,9 @@
           for (i, pt) in pts.enumerate() {
             place(
               left + top,
-              dx: pt.at(0) - 4pt,
-              dy: pt.at(1) - 4pt,
-              circle(radius: 4pt, fill: color, stroke: white + 1pt)
+              dx: pt.at(0) - dot-r,
+              dy: pt.at(1) - dot-r,
+              circle(radius: dot-r, fill: color, stroke: white + 0.5pt)
             )
 
             // Show value near point (offset based on angle to avoid overlap)
@@ -155,9 +150,10 @@
               let offset-y = 8pt * calc.sin(angle)
               place(
                 left + top,
-                dx: pt.at(0) + offset-x - 8pt,
-                dy: pt.at(1) + offset-y - 5pt,
-                text(size: t.axis-label-size, fill: color, weight: "bold")[#s.values.at(i)]
+                dx: pt.at(0) + offset-x,
+                dy: pt.at(1) + offset-y,
+                move(dx: -1em, dy: -0.5em,
+                  text(size: t.axis-label-size, fill: color, weight: "bold")[#s.values.at(i)])
               )
             }
           }
@@ -166,17 +162,7 @@
 
       // Legend
       if legend-width > 0pt {
-        box(width: legend-width)[
-          #v(20pt)
-          #for (i, s) in series.enumerate() {
-            box(inset: (x: 5pt, y: 3pt))[
-              #box(width: t.legend-swatch-size, height: t.legend-swatch-size, fill: get-color(t, i), baseline: 2pt, radius: 2pt)
-              #h(6pt)
-              #text(size: t.legend-size, fill: t.text-color)[#s.name]
-            ]
-            linebreak()
-          }
-        ]
+        draw-legend-vertical(series.map(s => s.name), t, width: legend-width)
       }
     )
   ]

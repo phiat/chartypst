@@ -1,7 +1,8 @@
 // chord.typ - Chord diagrams showing flows between entities
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
 #import "../validate.typ": validate-chord-data
 #import "../primitives/container.typ": chart-container
+#import "../primitives/polar.typ": arc-points as polar-arc-points, place-polar-label
 
 /// Renders a chord diagram showing relationships and flows between entities
 /// arranged around a circular ring.
@@ -30,9 +31,9 @@
   show-labels: true,
   gap: 2,
   theme: none,
-) = {
+) = context {
   validate-chord-data(data, "chord-diagram")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
 
   let labels = data.labels
   let matrix = data.matrix
@@ -86,13 +87,9 @@
     (cx + r * calc.cos(a), cy + r * calc.sin(a))
   }
 
-  // ── Helper: arc as polygon points ────────────────────────────────────
+  // Use shared arc-points from polar.typ (aliased as polar-arc-points)
   let arc-points = (cx, cy, r, start-deg, end-deg, steps) => {
-    array.range(steps + 1).map(s => {
-      let frac = s / steps
-      let a = start-deg + (end-deg - start-deg) * frac
-      pt(cx, cy, r, a)
-    })
+    polar-arc-points(cx, cy, r, start-deg, end-deg, steps: steps)
   }
 
   // ── Pre-compute outgoing offsets per entity ──────────────────────────
@@ -214,23 +211,9 @@
 
           let mid-angle = arc-starts.at(i) + span / 2
           let label-r = outer-r + 12pt
-          let pos = pt(center-x, center-y, label-r, mid-angle)
 
-          // Determine text alignment based on angle quadrant
-          let lx = pos.at(0)
-          let ly = pos.at(1)
-
-          // Offset for centering the text
-          let dx = lx - 20pt
-          let dy = ly - 6pt
-
-          place(left + top,
-            dx: dx,
-            dy: dy,
-            box(width: 40pt, align(center,
-              text(size: 7pt, fill: t.text-color, str(labels.at(i)))
-            )),
-          )
+          place-polar-label(center-x, center-y, mid-angle, label-r,
+            text(size: 7pt, fill: t.text-color, str(labels.at(i))))
         }
       }
     ]

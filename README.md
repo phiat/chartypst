@@ -2,46 +2,78 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Typst](https://img.shields.io/badge/typst-%3E%3D0.12.0-239dad)](https://typst.app)
-[![Charts](https://img.shields.io/badge/chart_types-50-orange)](screenshots/)
+[![Charts](https://img.shields.io/badge/chart_types-51-orange)](screenshots/)
 [![Pure Typst](https://img.shields.io/badge/dependencies-zero-brightgreen)]()
 
 A charting library for [Typst](https://typst.app) built entirely with native primitives (`rect`, `circle`, `line`, `polygon`, `place`). No external dependencies required.
 
 ## Gallery
 
-All 50 chart types across 6 pages — see [`examples/showcase.typ`](examples/showcase.typ) for the source:
+All 51 chart types across 7 pages — see [`examples/showcase.typ`](examples/showcase.typ) for the source:
 
-![Showcase Page 1](screenshots/showcase-1.png)
-![Showcase Page 2](screenshots/showcase-2.png)
-![Showcase Page 3](screenshots/showcase-3.png)
-![Showcase Page 4](screenshots/showcase-4.png)
-![Showcase Page 5](screenshots/showcase-5.png)
-![Showcase Page 6](screenshots/showcase-6.png)
+![Showcase Page 1](screenshots/showcase/showcase-1.png)
+![Showcase Page 2](screenshots/showcase/showcase-2.png)
+![Showcase Page 3](screenshots/showcase/showcase-3.png)
+![Showcase Page 4](screenshots/showcase/showcase-4.png)
+![Showcase Page 5](screenshots/showcase/showcase-5.png)
+![Showcase Page 6](screenshots/showcase/showcase-6.png)
+![Showcase Page 7](screenshots/showcase/showcase-7.png)
+
+## Per-Chart Demos
+
+Each demo shows a chart family in a 2×2 grid with light/dark themes and variations.
+See [`examples/demos/`](examples/demos/) for the source files.
+
+| Demo | Charts shown |
+|---|---|
+| ![bar](screenshots/demo/demo-bar.png) | `bar-chart`, `horizontal-bar-chart` (light + dark) |
+| ![bar-multi](screenshots/demo/demo-bar-multi.png) | `grouped-bar-chart`, `stacked-bar-chart` (light + dark) |
+| ![bar-advanced](screenshots/demo/demo-bar-advanced.png) | `grouped-stacked-bar-chart`, `diverging-bar-chart` (light + dark) |
+| ![line](screenshots/demo/demo-line.png) | `line-chart`, `multi-line-chart` (light + dark) |
+| ![area](screenshots/demo/demo-area.png) | `area-chart`, `stacked-area-chart` (light + dark) |
+| ![dual-axis](screenshots/demo/demo-dual-axis.png) | `dual-axis-chart` (light, dark, presentation, minimal) |
+| ![pie](screenshots/demo/demo-pie.png) | `pie-chart`, donut mode (light + dark) |
+| ![radar](screenshots/demo/demo-radar.png) | `radar-chart` (light, dark, 3-series, accessible) |
+| ![scatter](screenshots/demo/demo-scatter.png) | `scatter-plot`, `multi-scatter-plot`, `bubble-chart` |
+| ![gauge](screenshots/demo/demo-gauge.png) | `gauge-chart`, `progress-bar`, `circular-progress` |
+| ![heatmap](screenshots/demo/demo-heatmap.png) | `heatmap`, `calendar-heatmap`, `correlation-matrix` |
+| ![statistical](screenshots/demo/demo-statistical.png) | `histogram`, `box-plot`, `violin-plot`, `waterfall-chart` |
+| ![comparison](screenshots/demo/demo-comparison.png) | `slope-chart`, `dumbbell-chart`, `lollipop-chart`, `bullet-chart` |
+| ![flow](screenshots/demo/demo-flow.png) | `sankey-chart`, `gantt-chart`, `timeline-chart`, `chord-diagram` |
+| ![misc](screenshots/demo/demo-misc.png) | `waffle-chart`, `parliament-chart`, `radial-bar-chart`, `sunburst-chart` |
+| ![dashboard](screenshots/demo/demo-dashboard.png) | `metric-row`, `word-cloud`, sparklines table, `progress-bars` |
+| ![rings](screenshots/demo/demo-rings.png) | `ring-progress`, `treemap` (light + dark) |
+| ![bump](screenshots/demo/demo-bump.png) | `bump-chart`, `funnel-chart` (light + dark) |
+| ![themes](screenshots/demo/demo-themes.png) | Theme comparison across all 6 presets + `with-theme` |
 
 ## Examples
 
 | File | Description |
 |---|---|
-| [`examples/showcase.typ`](examples/showcase.typ) | Compact 6-page showcase of all 50 chart types (dark theme) |
-| [`examples/demo.typ`](examples/demo.typ) | Comprehensive 18-page demo with all features, themes, and data loading |
+| [`examples/demos/`](examples/demos/) | 19 per-chart demo files, each a 2×2 grid (light/dark + variations) |
+| [`examples/showcase.typ`](examples/showcase.typ) | Compact 7-page showcase of all chart types (dark theme) |
+| [`examples/demo.typ`](examples/demo.typ) | Comprehensive demo with all features, themes, and data loading |
 
-Sample data files used by the demo:
+Sample data files used by `demo.typ`:
 - [`data/characters.json`](data/characters.json) — RPG character stats
 - [`data/events.json`](data/events.json) — Conference/event data
 - [`data/analytics.json`](data/analytics.json) — Dashboard analytics data
 
 ```bash
-typst compile --root . examples/showcase.typ
-typst compile --root . examples/demo.typ
+just demos      # Compile all per-chart demos
+just showcase   # Compile the showcase
+just demo       # Compile the comprehensive demo
 ```
 
 ## Features
 
-- **50 chart types** for data visualization
-- **JSON data input** - load data directly from JSON files
-- **Theme system** - preset themes and custom overrides for consistent styling
-- **Customizable** - colors, sizes, labels, legends
-- **Pure Typst** - no packages or external tools needed
+- **51 chart types** for data visualization
+- **JSON data input** — load data directly from JSON files
+- **Theme system** — preset themes, custom overrides, and `with-theme()` for document-wide defaults
+- **Layout primitives** — shared utilities for label density, font scaling, and label placement
+- **Annotations** — overlay reference lines, bands, and labels on Cartesian charts
+- **Customizable** — colors, sizes, labels, legends
+- **Pure Typst** — no packages or external tools needed
 
 ## Chart Types
 
@@ -71,6 +103,7 @@ typst compile --root . examples/demo.typ
 - `scatter-plot` - X/Y point plotting
 - `multi-scatter-plot` - Multi-series scatter
 - `bubble-chart` - Scatter with size dimension
+- `multi-bubble-chart` - Multi-series bubble chart
 
 ### Gauges & Progress
 - `gauge-chart` - Semi-circular dial gauge
@@ -133,13 +166,13 @@ Overlay reference lines, bands, and labels on bar, line, and scatter charts:
 ## Installation
 
 ```typst
-#import "@preview/primaviz:0.1.1": *
+#import "@preview/primaviz:0.2.0": *
 ```
 
 ## Usage
 
 ```typst
-#import "@preview/primaviz:0.1.1": *
+#import "@preview/primaviz:0.2.0": *
 
 // Load data from JSON
 #let data = json("mydata.json")
@@ -186,9 +219,25 @@ Every chart function accepts an optional `theme` parameter. Themes control color
 ### Using a preset theme
 
 ```typst
-#import "@preview/primaviz:0.1.1": *
+#import "@preview/primaviz:0.2.0": *
 
 #bar-chart(data, theme: themes.dark)
+```
+
+### Document-wide theme
+
+Use `with-theme()` to set a default theme for all charts in a block — no need to pass `theme:` to every chart. Explicit per-chart `theme:` parameters still override.
+
+```typst
+// Block wrapper
+#with-theme(themes.dark)[
+  #bar-chart(data)       // uses dark theme
+  #pie-chart(data2)      // uses dark theme
+  #line-chart(data3, theme: themes.minimal) // explicit override wins
+]
+
+// Or as a show rule for the entire document
+#show: with-theme.with(themes.dark)
 ```
 
 ### Custom overrides
@@ -258,7 +307,7 @@ Pass a dictionary with only the keys you want to change. Unspecified keys fall b
 The default theme uses Tableau 10 colors. You can access colors from any theme via the `get-color` function:
 
 ```typst
-#import "@preview/primaviz:0.1.1": get-color, themes
+#import "@preview/primaviz:0.2.0": get-color, themes
 
 // Default palette
 #get-color(themes.default, 0)  // blue
@@ -274,56 +323,80 @@ The default theme uses Tableau 10 colors. You can access colors from any theme v
 ```text
 primaviz/
   src/
-    lib.typ            # Public entrypoint - re-exports everything
-    theme.typ          # Theme system and preset themes
-    util.typ           # Shared utilities
-    charts/            # One module per chart family
-      bar.typ          # bar, horizontal, grouped, stacked, grouped-stacked
-      line.typ         # line, multi-line
-      dual-axis.typ    # dual Y-axis
-      area.typ         # area, stacked-area
-      pie.typ          # pie, donut
-      radar.typ
-      scatter.typ      # scatter, multi-scatter, bubble
-      gauge.typ        # gauge, progress-bar, circular-progress, progress-bars
-      rings.typ        # ring-progress (fitness rings)
-      heatmap.typ      # heatmap, calendar-heatmap, correlation-matrix
-      sparkline.typ    # sparkline, sparkbar, sparkdot
-      waterfall.typ
-      funnel.typ
-      boxplot.typ
-      histogram.typ
-      treemap.typ
-      lollipop.typ     # lollipop, horizontal-lollipop
-      sankey.typ
-      bullet.typ       # bullet-chart, bullet-charts
-      slope.typ
-      diverging.typ
-      gantt.typ
-      waffle.typ
-      bump.typ
-      dumbbell.typ
-      radial-bar.typ
-      sunburst.typ
-      metric.typ       # metric-card, metric-row
-      violin.typ
-      timeline.typ
-      parliament.typ
-      chord.typ
-      wordcloud.typ
-    primitives/        # Low-level drawing helpers
-      axes.typ
-      annotations.typ
-      container.typ
-      legend.typ
-      title.typ
-    validate.typ       # Input validation helpers
+    lib.typ                  # Public entrypoint — re-exports everything
+    theme.typ                # Theme system and preset themes
+    util.typ                 # Shared utilities
+    validate.typ             # Input validation helpers
+    charts/                  # One module per chart family
+      bar.typ                # bar, horizontal, grouped, stacked, grouped-stacked
+      line.typ               # line, multi-line
+      dual-axis.typ          # dual Y-axis
+      area.typ               # area, stacked-area
+      pie.typ                # pie, donut
+      radar.typ              # spider/radar chart
+      scatter.typ            # scatter, multi-scatter, bubble, multi-bubble
+      gauge.typ              # gauge, progress-bar, circular-progress, progress-bars
+      rings.typ              # ring-progress (fitness rings)
+      heatmap.typ            # heatmap, calendar-heatmap, correlation-matrix
+      sparkline.typ          # sparkline, sparkbar, sparkdot
+      waterfall.typ          # bridge/waterfall chart
+      funnel.typ             # conversion funnel
+      boxplot.typ            # box-and-whisker plot
+      histogram.typ          # auto-binned frequency distribution
+      treemap.typ            # nested rectangles
+      lollipop.typ           # lollipop, horizontal-lollipop
+      sankey.typ             # flow diagram
+      bullet.typ             # bullet-chart, bullet-charts
+      slope.typ              # two-period comparison
+      diverging.typ          # left/right diverging bars
+      gantt.typ              # project timeline
+      waffle.typ             # proportional grid
+      bump.typ               # ranking chart
+      dumbbell.typ           # before/after comparison
+      radial-bar.typ         # circular bars
+      sunburst.typ           # multi-level hierarchical pie
+      metric.typ             # metric-card, metric-row
+      violin.typ             # kernel density estimation
+      timeline.typ           # vertical event timeline
+      parliament.typ         # semicircle seat chart
+      chord.typ              # circular flow diagram
+      wordcloud.typ          # spiral-placement word cloud
+    primitives/              # Low-level drawing helpers
+      axes.typ               # axis lines, ticks, labels, grid, cartesian-layout
+      layout.typ             # density-skip, font-for-space, page-grid, label placement
+      annotations.typ        # reference lines, bands, labels
+      container.typ          # chart container wrapper
+      legend.typ             # horizontal, vertical, draw-legend-auto
+      polar.typ              # shared polar/radial helpers (arcs, slices, labels)
+      title.typ              # title rendering
   examples/
-    showcase.typ       # 6-page compact showcase (dark theme)
-    demo.typ           # Comprehensive 18-page demo
-  data/                # Sample JSON data files
-  screenshots/         # Gallery images
-  justfile             # Common dev commands
+    demos/                   # Per-chart demo files (19 files, 2×2 grids)
+      demo-bar.typ           # bar-chart, horizontal-bar-chart
+      demo-bar-multi.typ     # grouped-bar, stacked-bar
+      demo-bar-advanced.typ  # grouped-stacked, diverging
+      demo-line.typ          # line-chart, multi-line-chart
+      demo-area.typ          # area-chart, stacked-area-chart
+      demo-dual-axis.typ     # dual-axis-chart (4 themes)
+      demo-pie.typ           # pie-chart, donut
+      demo-radar.typ         # radar-chart (4 variants)
+      demo-scatter.typ       # scatter, multi-scatter, bubble
+      demo-gauge.typ         # gauge, progress-bar, circular-progress
+      demo-heatmap.typ       # heatmap, calendar-heatmap, correlation-matrix
+      demo-statistical.typ   # histogram, box-plot, violin, waterfall
+      demo-comparison.typ    # slope, dumbbell, lollipop, bullet
+      demo-flow.typ          # sankey, gantt, timeline, chord
+      demo-misc.typ          # waffle, parliament, radial-bar, sunburst
+      demo-dashboard.typ     # metric-row, word-cloud, sparklines, progress-bars
+      demo-rings.typ         # ring-progress, treemap
+      demo-bump.typ          # bump-chart, funnel-chart
+      demo-themes.typ        # theme comparison (all 6 presets + with-theme)
+    showcase.typ             # 7-page compact showcase (dark theme)
+    demo.typ                 # Comprehensive demo with JSON data loading
+  data/                      # Sample JSON data files
+  screenshots/
+    demo/                    # Per-chart demo screenshots (demo-*.png)
+    showcase/                # Showcase page screenshots (showcase-*.png)
+  justfile                   # Common dev commands
 ```
 
 ## Development
@@ -331,17 +404,19 @@ primaviz/
 Dev commands via [just](https://github.com/casey/just):
 
 ```bash
-just demo         # Compile the full demo
-just showcase     # Compile the 3-page showcase
-just watch        # Live-reload during development
-just test         # Run all compilation tests
-just check        # Full CI check (demo + showcase + tests)
-just screenshots  # Regenerate gallery images
-just open         # Compile and open the demo PDF
-just dev          # Watch with live-reload and open PDF
-just clean        # Clean generated artifacts
-just release      # Full release prep (check + screenshots)
-just stats        # Show project stats
+just demos           # Compile all per-chart demos
+just demo            # Compile the comprehensive demo
+just showcase        # Compile the showcase
+just watch           # Live-reload during development
+just watch-demo bar  # Watch a specific demo (e.g., bar, pie, scatter)
+just test            # Run all compilation tests
+just check           # Full CI check (demo + demos + showcase + tests)
+just screenshots     # Regenerate screenshots (screenshots/demo/ + screenshots/showcase/)
+just open            # Compile and open the demo PDF
+just dev             # Watch with live-reload and open PDF
+just clean           # Clean generated artifacts
+just release         # Full release prep (check + screenshots)
+just stats           # Show project stats
 ```
 
 Issue tracking with [beads](https://github.com/steveyegge/beads).

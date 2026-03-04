@@ -1,7 +1,8 @@
 // sunburst.typ - Multi-level pie/donut chart for hierarchical data
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
 #import "../validate.typ": validate-sunburst-data
 #import "../primitives/container.typ": chart-container
+#import "../primitives/polar.typ": annular-wedge-points, separator-stroke
 
 /// Computes the maximum depth of a hierarchical node tree.
 ///
@@ -84,9 +85,9 @@
   title: none,
   show-labels: true,
   theme: none,
-) = {
+) = context {
   validate-sunburst-data(data, "sunburst-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
 
   // Compute depth (excluding root) to determine how many rings we need
   let total-depth = _max-depth(data) - 1  // rings = depth levels below root
@@ -114,27 +115,7 @@
         let angle-span = seg.end-angle - seg.start-angle
         if angle-span < 0.1 { continue }  // skip tiny segments
 
-        // Number of line segments to approximate arcs
-        let arc-segments = calc.max(int(angle-span / 5), 4)
-
-        // Build polygon: outer arc forward, then inner arc backward
-        let pts = ()
-
-        // Outer arc (start -> end)
-        for j in array.range(arc-segments + 1) {
-          let angle = seg.start-angle + (j / arc-segments) * angle-span
-          let x = cx + r-outer * calc.cos(angle * 1deg)
-          let y = cy + r-outer * calc.sin(angle * 1deg)
-          pts.push((x, y))
-        }
-
-        // Inner arc (end -> start)
-        for j in array.range(arc-segments + 1) {
-          let angle = seg.end-angle - (j / arc-segments) * angle-span
-          let x = cx + r-inner * calc.cos(angle * 1deg)
-          let y = cy + r-inner * calc.sin(angle * 1deg)
-          pts.push((x, y))
-        }
+        let pts = annular-wedge-points(cx, cy, r-inner, r-outer, seg.start-angle, seg.end-angle)
 
         // Color: base color from palette, lighten for deeper levels
         let base-color = get-color(t, seg.color-index)
@@ -152,8 +133,8 @@
           left + top,
           polygon(
             fill: seg-color,
-            stroke: (if t.background != none { t.background } else { white }) + 0.75pt,
-            ..pts.map(p => (p.at(0), p.at(1)))
+            stroke: separator-stroke(t, thickness: 0.75pt),
+            ..pts,
           )
         )
 
@@ -167,15 +148,19 @@
           // Determine text color based on depth
           let label-color = if seg.depth <= 2 { t.text-color-inverse } else { t.text-color }
 
+          let label-size = calc.max(t.value-label-size - 1pt, 5pt)
+          let label-w = 4em
           place(
             left + top,
-            dx: lx - 18pt,
-            dy: ly - 5pt,
-            text(
-              size: calc.max(t.value-label-size - 1pt, 5pt),
-              fill: label-color,
-              weight: if seg.depth == 1 { "bold" } else { "regular" },
-            )[#seg.name]
+            dx: lx - label-w / 2,
+            dy: ly - 0.5em,
+            box(width: label-w, height: 1em,
+              align(center + horizon,
+                text(
+                  size: label-size,
+                  fill: label-color,
+                  weight: if seg.depth == 1 { "bold" } else { "regular" },
+                )[#seg.name]))
           )
         }
       }

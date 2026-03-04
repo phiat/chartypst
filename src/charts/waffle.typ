@@ -1,9 +1,9 @@
 // waffle.typ - Waffle chart (grid of squares showing proportions)
-#import "../theme.typ": resolve-theme, get-color
-#import "../util.typ": normalize-data
+#import "../theme.typ": _resolve-ctx, get-color
+#import "../util.typ": normalize-data, nonzero
 #import "../validate.typ": validate-simple-data
 #import "../primitives/container.typ": chart-container
-#import "../primitives/legend.typ": draw-legend
+#import "../primitives/legend.typ": draw-legend-auto
 
 /// Renders a waffle chart — a grid of squares where each square represents
 /// a unit or percentage of the total. Commonly used in infographics to
@@ -34,9 +34,9 @@
   show-legend: true,
   show-values: true,
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "waffle-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values
@@ -44,8 +44,7 @@
   let total-cells = rows * cols
 
   // Normalize values to percentages of total-cells
-  let raw-sum = values.sum()
-  if raw-sum == 0 { raw-sum = 1 }  // division-by-zero guard
+  let raw-sum = nonzero(values.sum())
   let cell-counts = values.map(v => int(calc.round(v / raw-sum * total-cells)))
 
   // Adjust rounding so cell-counts sum to exactly total-cells
@@ -81,19 +80,18 @@
   // Compute percentages for legend display
   let percentages = values.map(v => calc.round(v / raw-sum * 100, digits: 1))
 
-  // Build legend entries
+  // Build legend entries — compact format
   let legend-entries = ()
   if show-legend {
     for i in range(n) {
-      let label-text = labels.at(i)
-      if show-values {
-        label-text = label-text + " (" + str(percentages.at(i)) + "%)"
-      }
+      let pct = str(percentages.at(i)) + "%"
+      let label-text = if show-values { labels.at(i) + " (" + pct + ")" } else { labels.at(i) }
       legend-entries.push(label-text)
     }
   }
 
-  let legend-height = if show-legend { 30pt } else { 0pt }
+  // Reserve legend height scaled to entry count — ~15pt per row, ~3 entries per row
+  let legend-height = if show-legend { calc.max(25pt, calc.ceil(n / 3) * 16pt) } else { 0pt }
 
   chart-container(size, size + legend-height, title, t)[
     // Draw grid bottom-to-top, left-to-right
@@ -131,8 +129,6 @@
     ]
 
     // Legend
-    #if show-legend {
-      draw-legend(legend-entries, t)
-    }
+    #draw-legend-auto(legend-entries, t, show-legend: show-legend)
   ]
 }

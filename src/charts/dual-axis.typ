@@ -1,10 +1,10 @@
 // dual-axis.typ - Dual Y-axis line chart
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
 #import "../validate.typ": validate-dual-axis-data
 #import "../primitives/container.typ": chart-container
-#import "../primitives/axes.typ": draw-grid, draw-axis-titles
-#import "../primitives/legend.typ": draw-legend
-#import "../util.typ": format-number
+#import "../primitives/axes.typ": cartesian-layout, draw-grid, draw-axis-titles, draw-x-even-labels, draw-y-ticks
+#import "../primitives/legend.typ": draw-legend-auto
+#import "../util.typ": nonzero, nice-ceil
 
 #let dual-axis-chart(
   data,
@@ -19,13 +19,10 @@
   x-label: none,
   show-grid: auto,
   theme: none,
-) = {
+) = context {
   validate-dual-axis-data(data, "dual-axis-chart")
-  let merged = if theme == none { (:) } else { theme }
-  if show-grid != auto {
-    merged.insert("show-grid", show-grid)
-  }
-  let t = resolve-theme(merged)
+  let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
+  let t = _resolve-ctx(theme, overrides: grid-overrides)
 
   let labels = data.labels
   let left-series = data.left
@@ -38,73 +35,53 @@
 
   // Compute left axis range
   let l-min = calc.min(..left-series.values)
-  let l-max = calc.max(..left-series.values)
-  let l-range = l-max - l-min
-  if l-range == 0 { l-range = 1 }
+  let l-max = nice-ceil(calc.max(..left-series.values))
+  let l-range = nonzero(l-max - l-min)
 
   // Compute right axis range
   let r-min = calc.min(..right-series.values)
-  let r-max = calc.max(..right-series.values)
-  let r-range = r-max - r-min
-  if r-range == 0 { r-range = 1 }
+  let r-max = nice-ceil(calc.max(..right-series.values))
+  let r-range = nonzero(r-max - r-min)
 
-  let pad-left = 50pt
-  let pad-right = 50pt
+  let cl = cartesian-layout(width, height, t, extra-left: 10pt, extra-right: 10pt)
 
   chart-container(width, height, title, t, extra-height: 50pt)[
-    #let chart-height = height - 20pt
-    #let chart-width = width - pad-left - pad-right
+    #let pad-top = cl.pad-top
+    #let chart-height = cl.chart-height
+    #let chart-width = cl.chart-width
+    #let origin-x = cl.origin-x
+    #let origin-y = cl.origin-y
 
-    #box(width: width, height: chart-height)[
+    #box(width: width, height: height)[
       // Grid lines (based on left axis scale)
-      #draw-grid(pad-left, 0pt, chart-width, chart-height, t)
+      #draw-grid(origin-x, pad-top, chart-width, chart-height, t)
 
       // Left Y-axis line
-      #place(left + top, line(start: (pad-left, 0pt), end: (pad-left, chart-height), stroke: t.axis-stroke))
+      #place(left + top, line(start: (origin-x, pad-top), end: (origin-x, origin-y), stroke: t.axis-stroke))
       // Right Y-axis line
-      #place(left + top, line(start: (pad-left + chart-width, 0pt), end: (pad-left + chart-width, chart-height), stroke: t.axis-stroke))
+      #place(left + top, line(start: (origin-x + chart-width, pad-top), end: (origin-x + chart-width, origin-y), stroke: t.axis-stroke))
       // X-axis line
-      #place(left + bottom, line(start: (pad-left, 0pt), end: (pad-left + chart-width, 0pt), stroke: t.axis-stroke))
+      #place(left + top, line(start: (origin-x, origin-y), end: (origin-x + chart-width, origin-y), stroke: t.axis-stroke))
 
-      // Left Y-axis ticks
-      #for i in array.range(t.tick-count) {
-        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
-        let y-val = l-min + l-range * fraction
-        let y-pos = chart-height - fraction * (chart-height - 20pt) - 10pt
-        place(
-          left + top,
-          dx: 5pt,
-          dy: y-pos - 5pt,
-          text(size: t.axis-label-size, fill: l-color)[#format-number(y-val, digits: 1, mode: t.number-format)]
-        )
-      }
+      // Left Y-axis ticks — right-aligned into left padding
+      #draw-y-ticks(l-min, l-max, chart-height, pad-top, origin-x, t, color: l-color)
 
-      // Right Y-axis ticks
-      #for i in array.range(t.tick-count) {
-        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
-        let y-val = r-min + r-range * fraction
-        let y-pos = chart-height - fraction * (chart-height - 20pt) - 10pt
-        place(
-          left + top,
-          dx: pad-left + chart-width + 5pt,
-          dy: y-pos - 5pt,
-          text(size: t.axis-label-size, fill: r-color)[#format-number(y-val, digits: 1, mode: t.number-format)]
-        )
-      }
+      // Right Y-axis ticks — left-aligned after right axis
+      #draw-y-ticks(r-min, r-max, chart-height, pad-top, origin-x + chart-width, t, color: r-color, side: "right")
 
       // Compute left series points
       #let l-points = ()
       #for (i, val) in left-series.values.enumerate() {
-        let x = if n == 1 { pad-left + chart-width / 2 } else { pad-left + 5pt + (i / (n - 1)) * (chart-width - 10pt) }
-        let y = chart-height - ((val - l-min) / l-range) * (chart-height - 20pt) - 10pt
+        let x = if n == 1 { origin-x + chart-width / 2 } else { origin-x + (i / (n - 1)) * chart-width }
+        let y = pad-top + chart-height - ((val - l-min) / l-range) * chart-height
         l-points.push((x, y))
       }
 
       // Compute right series points (scaled to right axis)
       #let r-points = ()
       #for (i, val) in right-series.values.enumerate() {
-        let x = if n == 1 { pad-left + chart-width / 2 } else { pad-left + 5pt + (i / (n - 1)) * (chart-width - 10pt) }
-        let y = chart-height - ((val - r-min) / r-range) * (chart-height - 20pt) - 10pt
+        let x = if n == 1 { origin-x + chart-width / 2 } else { origin-x + (i / (n - 1)) * chart-width }
+        let y = pad-top + chart-height - ((val - r-min) / r-range) * chart-height
         r-points.push((x, y))
       }
 
@@ -156,43 +133,31 @@
         }
       }
 
-      // X-axis category labels
-      #for (i, lbl) in labels.enumerate() {
-        let x = if n == 1 { pad-left + chart-width / 2 } else { pad-left + 5pt + (i / (n - 1)) * (chart-width - 10pt) }
-        place(
-          left + bottom,
-          dx: x - 15pt,
-          dy: 10pt,
-          text(size: t.axis-label-size, fill: t.text-color)[#lbl]
-        )
-      }
+      // X-axis category labels — spread evenly across chart width
+      #draw-x-even-labels(labels, n, origin-x, chart-width, origin-y, t)
 
       // Axis labels
       #if left-label != none {
-        place(left + top, dx: 2pt, dy: chart-height / 2,
+        place(left + top, dx: 2pt, dy: origin-y / 2,
           rotate(-90deg, text(size: t.axis-title-size, fill: l-color)[#left-label])
         )
       }
       #if right-label != none {
-        place(left + top, dx: width - 8pt, dy: chart-height / 2,
+        place(left + top, dx: width - 8pt, dy: origin-y / 2,
           rotate(-90deg, text(size: t.axis-title-size, fill: r-color)[#right-label])
         )
       }
       #if x-label != none {
-        place(left + top, dx: pad-left + chart-width / 2, dy: chart-height + 18pt,
+        place(left + top, dx: origin-x + chart-width / 2, dy: origin-y + 1.5em,
           align(center, text(size: t.axis-title-size, fill: t.text-color)[#x-label])
         )
       }
     ]
 
     // Legend
-    #draw-legend(
-      (
-        (name: left-series.name, color: l-color),
-        (name: right-series.name, color: r-color),
-      ),
-      t,
-      swatch-type: "line",
+    #draw-legend-auto(
+      ((name: left-series.name, color: l-color), (name: right-series.name, color: r-color)),
+      t, swatch-type: "line",
     )
   ]
 }

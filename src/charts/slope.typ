@@ -1,5 +1,6 @@
 // slope.typ - Slope chart (two-period comparison)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
+#import "../util.typ": nonzero
 #import "../validate.typ": validate-slope-data
 #import "../primitives/container.typ": chart-container
 
@@ -27,9 +28,9 @@
   line-width: 1.5pt,
   show-values: true,
   theme: none,
-) = {
+) = context {
   validate-slope-data(data, "slope-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
 
   let labels = data.labels
   let start-values = data.start-values
@@ -42,8 +43,7 @@
   let all-values = start-values + end-values
   let max-val = calc.max(..all-values)
   let min-val = calc.min(..all-values)
-  let val-range = max-val - min-val
-  if val-range == 0 { val-range = 1 }
+  let val-range = nonzero(max-val - min-val)
 
   // Layout constants
   let label-margin = 70pt   // space for labels on each side
@@ -56,16 +56,20 @@
     #let chart-height = height - 10pt
 
     #box(width: width, height: chart-height)[
-      // Column headers
+      // Column headers — centered over each axis
       #place(left + top,
-        dx: axis-x-left - 15pt,
+        dx: 0pt,
         dy: 2pt,
-        text(size: t.axis-title-size, weight: "bold", fill: t.text-color)[#start-label]
+        box(width: axis-x-left * 2, height: 1.5em,
+          align(center + top,
+            text(size: t.axis-title-size, weight: "bold", fill: t.text-color)[#start-label]))
       )
       #place(left + top,
-        dx: axis-x-right - 15pt,
+        dx: axis-x-right - label-margin,
         dy: 2pt,
-        text(size: t.axis-title-size, weight: "bold", fill: t.text-color)[#end-label]
+        box(width: label-margin * 2, height: 1.5em,
+          align(center + top,
+            text(size: t.axis-title-size, weight: "bold", fill: t.text-color)[#end-label]))
       )
 
       // Left axis line
@@ -119,7 +123,7 @@
           circle(radius: dot-size, fill: color, stroke: white + 0.5pt)
         )
 
-        // Left label + value
+        // Left label + value — right-aligned into label margin
         {
           let label-content = if show-values {
             [#text(size: t.axis-label-size, fill: t.text-color)[#lbl #sv]]
@@ -127,9 +131,10 @@
             [#text(size: t.axis-label-size, fill: t.text-color)[#lbl]]
           }
           place(left + top,
-            dx: 2pt,
-            dy: y-start - 5pt,
-            label-content,
+            dx: 0pt,
+            dy: y-start,
+            box(width: axis-x-left - dot-size - 4pt, height: 0pt,
+              align(right, move(dy: -0.5em, label-content))),
           )
         }
 
@@ -142,8 +147,8 @@
           }
           place(left + top,
             dx: axis-x-right + dot-size + 4pt,
-            dy: y-end - 5pt,
-            label-content,
+            dy: y-end,
+            move(dy: -0.5em, label-content),
           )
         }
       }

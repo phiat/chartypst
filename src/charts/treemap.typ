@@ -1,6 +1,6 @@
 // treemap.typ - Treemap chart (squarified layout)
-#import "../theme.typ": resolve-theme, get-color
-#import "../util.typ": normalize-data
+#import "../theme.typ": _resolve-ctx, get-color
+#import "../util.typ": normalize-data, nonzero
 #import "../validate.typ": validate-simple-data
 #import "../primitives/container.typ": chart-container
 
@@ -25,9 +25,9 @@
   show-values: true,
   gap: 1.5pt,
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "treemap")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values
@@ -39,8 +39,7 @@
   let indexed = array.range(n).map(i => (idx: i, val: values.at(i)))
   let sorted = indexed.sorted(key: item => -item.val)
 
-  let total = values.sum()
-  if total == 0 { total = 1 }
+  let total = nonzero(values.sum())
 
   // Squarified treemap layout algorithm
   // Returns array of (idx, x, y, w, h) rectangles

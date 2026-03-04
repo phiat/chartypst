@@ -1,8 +1,10 @@
 // dumbbell.typ - Dumbbell chart (before/after or range comparison)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
+#import "../util.typ": nonzero, nice-floor, nice-ceil
 #import "../validate.typ": validate-dumbbell-data
 #import "../primitives/container.typ": chart-container
-#import "../primitives/legend.typ": draw-legend
+#import "../primitives/legend.typ": draw-legend-auto
+#import "../primitives/axes.typ": draw-y-label
 
 /// Renders a dumbbell chart showing range or before/after comparisons.
 ///
@@ -29,9 +31,9 @@
   line-width: 1.5pt,
   show-values: false,
   theme: none,
-) = {
+) = context {
   validate-dumbbell-data(data, "dumbbell-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
 
   let labels = data.labels
   let start-values = data.start-values
@@ -40,20 +42,19 @@
   let end-label = if "end-label" in data { data.end-label } else { "End" }
   let n = labels.len()
 
-  // Compute global min/max across both value sets
+  // Compute global min/max across both value sets — use nice rounding for clean axes
   let all-values = start-values + end-values
-  let max-val = calc.max(..all-values)
-  let min-val = calc.min(..all-values)
-  let val-range = max-val - min-val
-  if val-range == 0 { val-range = 1 }
+  let min-val = nice-floor(calc.min(..all-values))
+  let max-val = nice-ceil(calc.max(..all-values))
+  let val-range = nonzero(max-val - min-val)
 
-  // Layout constants
-  let label-margin = 80pt    // space for category labels on the left
-  let right-pad = 20pt
-  let top-pad = 10pt
-  let bottom-pad = 25pt      // room for value axis labels
-  let plot-left = label-margin
-  let plot-right = width - right-pad
+  // Layout constants — scale with chart dimensions; label area grows with width
+  let label-margin = calc.min(100pt, calc.max(60pt, width * 0.22))
+  let right-pad = calc.max(10pt, width * 0.05)
+  let top-pad = calc.max(5pt, height * 0.06)
+  let bottom-pad = calc.max(15pt, height * 0.15)
+  let plot-left = label-margin + dot-size
+  let plot-right = width - right-pad - dot-size
   let plot-width = plot-right - plot-left
 
   // Colors: start uses palette color 0, end uses palette color 1
@@ -67,7 +68,7 @@
     (name: end-label, color: end-color),
   )
 
-  let legend-content = draw-legend(legend-entries, t, swatch-type: "circle")
+  let legend-content = draw-legend-auto(legend-entries, t, swatch-type: "circle")
 
   chart-container(width, height, title, t, extra-height: 30pt, legend: legend-content)[
     #let chart-height = height - 10pt
@@ -104,7 +105,7 @@
       )
 
       // Draw a few tick marks on the value axis
-      #let tick-count = 5
+      #let tick-count = t.tick-count
       #for ti in range(tick-count + 1) {
         let frac = ti / tick-count
         let val = min-val + frac * val-range
@@ -117,12 +118,13 @@
             stroke: t.axis-stroke,
           )
         )
-        // Tick label
+        // Tick label — centered on tick position
         let display-val = if val == calc.floor(val) { str(int(val)) } else { str(calc.round(val, digits: 1)) }
         place(left + top,
-          dx: x - 10pt,
+          dx: x - 1.5em,
           dy: chart-height - bottom-pad + 6pt,
-          text(size: t.axis-label-size, fill: t.text-color)[#display-val]
+          box(width: 3em, height: 1.5em,
+            align(center + top, text(size: t.axis-label-size, fill: t.text-color)[#display-val]))
         )
       }
 
@@ -134,12 +136,8 @@
         let x-start = val-to-x(sv)
         let x-end = val-to-x(ev)
 
-        // Category label on the left
-        place(left + top,
-          dx: 4pt,
-          dy: y - 5pt,
-          text(size: t.axis-label-size, fill: t.text-color)[#lbl]
-        )
+        // Category label on the left — right-aligned into label margin
+        draw-y-label(lbl, y, label-margin, t)
 
         // Connecting line (muted gray)
         place(left + top,
@@ -170,15 +168,15 @@
           let s-dx = if sv <= ev { x-start - 20pt } else { x-start + dot-size + 3pt }
           place(left + top,
             dx: s-dx,
-            dy: y - 5pt,
-            text(size: 6pt, fill: start-color)[#sv]
+            dy: y,
+            move(dy: -0.5em, text(size: t.value-label-size, fill: start-color)[#sv])
           )
           // Value near end dot
           let e-dx = if ev >= sv { x-end + dot-size + 3pt } else { x-end - 20pt }
           place(left + top,
             dx: e-dx,
-            dy: y - 5pt,
-            text(size: 6pt, fill: end-color)[#ev]
+            dy: y,
+            move(dy: -0.5em, text(size: t.value-label-size, fill: end-color)[#ev])
           )
         }
       }

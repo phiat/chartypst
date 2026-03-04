@@ -1,5 +1,5 @@
 // metric.typ - Dashboard KPI tiles with big number, label, delta, and optional sparkline
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
 #import "../util.typ": format-number
 
 /// Renders a dashboard KPI tile with a prominent value, label, optional delta indicator,
@@ -12,6 +12,7 @@
 /// - width (length): Card width
 /// - height (auto, length): Card height; `auto` sizes to content
 /// - format (none, str): Number formatting mode passed to `format-number` ("auto", "si", "comma")
+/// - suffix (none, str): Optional suffix appended to the display value (e.g., "%", "ms")
 /// - theme (none, dictionary): Theme overrides
 /// -> content
 #let metric-card(
@@ -22,9 +23,10 @@
   width: 150pt,
   height: auto,
   format: none,
+  suffix: none,
   theme: none,
-) = {
-  let t = resolve-theme(theme)
+) = context {
+  let t = _resolve-ctx(theme)
   let accent = get-color(t, 0)
 
   // Format the display value
@@ -35,12 +37,20 @@
   } else {
     format-number(value)
   }
+  if suffix != none { display-value = display-value + suffix }
 
   // Delta colors and symbols
   let delta-content = if delta != none {
     let is-positive = delta > 0
     let is-zero = delta == 0
-    let delta-color = if is-positive { rgb("#2d9d3a") } else if is-zero { gray } else { rgb("#d13438") }
+    let has-dark-bg = t.background != none
+    let delta-color = if is-positive {
+      if has-dark-bg { rgb("#4ade80") } else { rgb("#2d9d3a") }
+    } else if is-zero {
+      t.text-color-light
+    } else {
+      if has-dark-bg { rgb("#f87171") } else { rgb("#d13438") }
+    }
     let arrow = if is-positive { "▲" } else if is-zero { "–" } else { "▼" }
     let sign = if is-positive { "+" } else { "" }
     let delta-str = sign + str(calc.round(delta, digits: 1)) + "%"
@@ -65,7 +75,12 @@
     }
 
     // Determine sparkline color from trend direction
-    let spark-color = if trend.last() >= trend.first() { rgb("#2d9d3a").transparentize(30%) } else { rgb("#d13438").transparentize(30%) }
+    let has-dark-bg = t.background != none
+    let spark-color = if trend.last() >= trend.first() {
+      if has-dark-bg { rgb("#4ade80").transparentize(30%) } else { rgb("#2d9d3a").transparentize(30%) }
+    } else {
+      if has-dark-bg { rgb("#f87171").transparentize(30%) } else { rgb("#d13438").transparentize(30%) }
+    }
 
     v(6pt)
     box(width: spark-width, height: spark-height)[
@@ -100,10 +115,11 @@
     width: width,
     height: height,
     fill: if t.background != none { t.background } else { white },
-    stroke: if t.border != none { t.border } else { 0.5pt + luma(220) },
+    stroke: if t.border != none { t.border } else if t.background != none { 0.5pt + t.text-color-light } else { 0.5pt + luma(220) },
     radius: 4pt,
     inset: 12pt,
   )[
+    #set align(center)
     // Big number
     #text(size: 22pt, weight: "bold", fill: t.text-color)[#display-value]
 
@@ -154,6 +170,7 @@
         trend: m.at("trend", default: none),
         width: 100%,
         format: m.at("format", default: none),
+        suffix: m.at("suffix", default: none),
         theme: theme,
       )
     })

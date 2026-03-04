@@ -1,5 +1,5 @@
 // funnel.typ - Funnel chart for process/conversion stages
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
 #import "../util.typ": normalize-data, format-number
 #import "../validate.typ": validate-simple-data
 #import "../primitives/container.typ": chart-container
@@ -24,9 +24,9 @@
   show-percentages: true,
   gap: 3pt,
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "funnel-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values
@@ -96,29 +96,37 @@
           if show-percentages { detail-parts.push(pct-text) }
           let detail = detail-parts.join(" · ")
 
-          // Center the text on the segment
+          // Center the text on the segment — use inset width to avoid boundary overlap
           let mid-y = y-top + seg-height / 2
           let avg-half = (top-half + bottom-half) / 2
+          let inset-half = calc.max(10pt, avg-half - 6pt)  // shrink box away from edges
+          let label-size = if avg-half * 2 < 60pt { calc.max(5pt, t.value-label-size - 1pt) } else { t.value-label-size }
+
+          // Stack label + detail vertically, centered on segment
+          let line-h = label-size * 1.4
+          let has-detail = n <= 9 and detail != ""
+          let total-h = if has-detail { line-h * 2 } else { line-h }
+          let start-y = mid-y - total-h / 2
 
           place(
             left + top,
-            dx: center-x - avg-half,
-            dy: mid-y - 7pt,
-            box(width: avg-half * 2, height: 14pt)[
-              #align(center)[
-                #text(size: t.value-label-size, fill: t.text-color-inverse, weight: "bold")[#label-text]
+            dx: center-x - inset-half,
+            dy: start-y,
+            box(width: inset-half * 2, height: line-h, clip: true)[
+              #align(center + horizon)[
+                #text(size: label-size, fill: t.text-color-inverse, weight: "bold")[#label-text]
               ]
             ]
           )
 
-          if n <= 9 and detail != "" {
+          if has-detail {
             place(
               left + top,
-              dx: center-x - avg-half,
-              dy: mid-y + 3pt,
-              box(width: avg-half * 2, height: 12pt)[
-                #align(center)[
-                  #text(size: t.value-label-size * 0.85, fill: t.text-color-inverse)[#detail]
+              dx: center-x - inset-half,
+              dy: start-y + line-h,
+              box(width: inset-half * 2, height: line-h, clip: true)[
+                #align(center + horizon)[
+                  #text(size: label-size * 0.85, fill: t.text-color-inverse)[#detail]
                 ]
               ]
             )

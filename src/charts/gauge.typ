@@ -1,7 +1,10 @@
 // gauge.typ - Gauge/dial and progress indicators
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": _resolve-ctx, get-color
+#import "../util.typ": nonzero, clamp
 #import "../validate.typ": validate-number, validate-simple-data
 #import "../primitives/container.typ": chart-container
+#import "../primitives/polar.typ": pie-slice-points, place-donut-hole
+#import "../primitives/layout.typ": font-for-space
 
 /// Renders a semicircular gauge/dial chart with a needle indicator.
 ///
@@ -27,24 +30,27 @@
   segments: none,
   needle-color: auto,
   theme: none,
-) = {
+) = context {
   validate-number(value, "gauge-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let needle-color = if needle-color == auto { t.text-color } else { needle-color }
-  let radius = size / 2 - 10pt
+  let margin = calc.max(3pt, size * 0.07)
+  let radius = size / 2 - margin
   let cx = size / 2
-  let cy = size / 2 + 10pt
+  let cy = size / 2 + margin
 
-  let val-range = max-val - min-val
-  if val-range == 0 { val-range = 1 }
+  let val-range = nonzero(max-val - min-val)
   let normalized = (value - min-val) / val-range
-  normalized = calc.max(0, calc.min(1, normalized))  // clamp 0-1
+  normalized = clamp(normalized, 0, 1)
 
   // Angle: -180deg (left) to 0deg (right)
   let needle-angle = -180deg + normalized * 180deg
 
-  chart-container(size, size / 2 + 20pt, title, t, extra-height: 30pt)[
-    #box(width: size, height: size / 2 + 30pt)[
+  let value-size-est = calc.max(5pt, size * 0.07)
+  let sub-label-est = calc.max(5pt, size * 0.05)
+  let extra-height = calc.max(10pt, value-size-est + sub-label-est + 15pt)
+  chart-container(size, size / 2 + margin + 5pt, title, t, extra-height: extra-height)[
+    #box(width: size, height: size / 2 + margin + extra-height)[
       // Draw segments or default arc
       #if segments != none {
         let prev-threshold = min-val
@@ -54,41 +60,20 @@
 
           let start-norm = (prev-threshold - min-val) / val-range
           let end-norm = (threshold - min-val) / val-range
+          let start-deg = -180 + start-norm * 180
+          let end-deg = -180 + end-norm * 180
 
-          let start-angle = -180deg + start-norm * 180deg
-          let end-angle = -180deg + end-norm * 180deg
-          let seg-angle = end-angle - start-angle
-
-          let n-pts = calc.max(int(seg-angle.deg() / 5), 3)
-
-          // Build arc segment
-          let pts = ((cx, cy),)
-          for j in array.range(n-pts + 1) {
-            let angle = start-angle + (j / n-pts) * seg-angle
-            pts.push((
-              cx + radius * calc.cos(angle),
-              cy + radius * calc.sin(angle)
-            ))
-          }
-
-          place(
-            left + top,
-            polygon(
-              fill: seg-color,
-              stroke: white + 0.5pt,
-              ..pts.map(p => (p.at(0), p.at(1)))
-            )
-          )
+          let pts = pie-slice-points(cx, cy, radius, start-deg, end-deg)
+          place(left + top, polygon(fill: seg-color, stroke: white + 0.5pt, ..pts))
 
           prev-threshold = threshold
         }
       } else {
-        // Default gradient arc
+        // Default gradient arc (36 slices with color gradient)
         for i in array.range(36) {
-          let start-angle = -180deg + (i / 36) * 180deg
-          let end-angle = -180deg + ((i + 1) / 36) * 180deg
+          let start-deg = -180 + (i / 36) * 180
+          let end-deg = -180 + ((i + 1) / 36) * 180
 
-          // Color gradient from green to yellow to red
           let seg-progress = i / 36
           let seg-color = if seg-progress < 0.5 {
             color.mix((rgb("#59a14f"), 100% - seg-progress * 200%), (rgb("#edc948"), seg-progress * 200%))
@@ -96,68 +81,67 @@
             color.mix((rgb("#edc948"), 100% - (seg-progress - 0.5) * 200%), (rgb("#e15759"), (seg-progress - 0.5) * 200%))
           }
 
-          let pts = ((cx, cy),)
-          for j in array.range(4) {
-            let angle = start-angle + (j / 3) * (end-angle - start-angle)
-            pts.push((cx + radius * calc.cos(angle), cy + radius * calc.sin(angle)))
-          }
-
-          place(left + top, polygon(fill: seg-color, stroke: none, ..pts.map(p => (p.at(0), p.at(1)))))
+          let pts = pie-slice-points(cx, cy, radius, start-deg, end-deg)
+          place(left + top, polygon(fill: seg-color, stroke: none, ..pts))
         }
       }
 
-      // Inner white circle (donut effect)
+      // Inner circle (donut effect)
       #let inner-radius = radius * 0.6
-      #place(
-        left + top,
-        dx: cx - inner-radius,
-        dy: cy - inner-radius,
-        circle(radius: inner-radius, fill: if t.background != none { t.background } else { white }, stroke: none)
-      )
+      #place-donut-hole(cx, cy, inner-radius, t)
 
-      // Needle
+      // Needle — scale thickness with chart size
       #let needle-len = radius * 0.85
       #let needle-end-x = cx + needle-len * calc.cos(needle-angle)
       #let needle-end-y = cy + needle-len * calc.sin(needle-angle)
+      #let needle-w = calc.max(1pt, size * 0.016)
 
       #place(
         left + top,
         line(
           start: (cx, cy),
           end: (needle-end-x, needle-end-y),
-          stroke: needle-color + 2.5pt
+          stroke: needle-color + needle-w
         )
       )
 
-      // Center cap
+      // Center cap — scale with chart size
+      #let cap-r = calc.max(2pt, size * 0.04)
       #place(
         left + top,
-        dx: cx - 6pt,
-        dy: cy - 6pt,
-        circle(radius: 6pt, fill: needle-color, stroke: white + 1pt)
+        dx: cx - cap-r,
+        dy: cy - cap-r,
+        circle(radius: cap-r, fill: needle-color, stroke: white + 0.5pt)
       )
 
-      // Min/max labels
-      #place(left + top, dx: cx - radius - 10pt, dy: cy + 5pt, text(size: t.axis-label-size, fill: t.text-color)[#min-val])
-      #place(left + top, dx: cx + radius - 5pt, dy: cy + 5pt, text(size: t.axis-label-size, fill: t.text-color)[#max-val])
+      // Min/max labels — scale font with chart size
+      #let scale-label-size = font-for-space(size, t.axis-label-size, ratio: 0.05)
+      #place(left + top, dx: cx - radius, dy: cy + 0.3em,
+        move(dx: -1em, text(size: scale-label-size, fill: t.text-color)[#min-val]))
+      #place(left + top, dx: cx + radius, dy: cy + 0.3em,
+        text(size: scale-label-size, fill: t.text-color)[#max-val])
 
-      // Value display
+      // Value display — below the semicircle, in the open space
+      #let value-size = font-for-space(size, 14pt, min-size: 7pt, ratio: 0.15)
       #if show-value {
         place(
           left + top,
-          dx: cx - 20pt,
-          dy: cy - 25pt,
-          text(size: 16pt, weight: "bold", fill: t.text-color)[#calc.round(value, digits: 1)]
+          dx: cx - size * 0.2,
+          dy: cy + cap-r + 2pt,
+          box(width: size * 0.4, align(center,
+            text(size: value-size, weight: "bold", fill: t.text-color)[#calc.round(value, digits: 1)]))
         )
       }
 
-      // Label below
+      // Label below value
+      #let sub-label-size = font-for-space(size, t.value-label-size, ratio: 0.05)
       #if label != none {
         place(
           left + top,
-          dx: cx - 30pt,
-          dy: cy + 15pt,
-          text(size: t.value-label-size, fill: t.text-color-light)[#label]
+          dx: cx - size * 0.3,
+          dy: cy + cap-r + value-size + 4pt,
+          box(width: size * 0.6, align(center,
+            text(size: sub-label-size, fill: t.text-color-light)[#label]))
         )
       }
     ]
@@ -188,10 +172,10 @@
   background: luma(230),
   rounded: true,
   theme: none,
-) = {
+) = context {
   validate-number(value, "progress-bar")
-  let t = resolve-theme(theme)
-  let progress = calc.min(1, calc.max(0, value / max-val))
+  let t = _resolve-ctx(theme)
+  let progress = clamp(value / max-val, 0, 1)
   let bar-color = if color != none { color } else { get-color(t, 0) }
   let radius = if rounded { height / 2 } else { 0pt }
 
@@ -226,13 +210,10 @@
         )
       }
 
-      // Value label
+      // Value label — centered in bar
       #if show-value {
-        place(
-          left + top,
-          dx: width / 2 - 15pt,
-          dy: height / 2 - 6pt,
-          text(size: 10pt, weight: "bold", fill: if progress > 0.5 { t.text-color-inverse } else { t.text-color })[
+        place(center + horizon,
+          text(size: t.value-label-size, weight: "bold", fill: if progress > 0.5 { t.text-color-inverse } else { t.text-color })[
             #calc.round(progress * 100, digits: 0)%
           ]
         )
@@ -263,10 +244,10 @@
   color: none,
   background: luma(230),
   theme: none,
-) = {
+) = context {
   validate-number(value, "circular-progress")
-  let t = resolve-theme(theme)
-  let progress = calc.min(1, calc.max(0, value / max-val))
+  let t = _resolve-ctx(theme)
+  let progress = clamp(value / max-val, 0, 1)
   let bar-color = if color != none { color } else { get-color(t, 0) }
   let radius = size / 2 - stroke-width / 2
   let cx = size / 2
@@ -334,13 +315,10 @@
         )
       }
 
-      // Center value
+      // Center value — centered in ring
       #if show-value {
-        place(
-          left + top,
-          dx: cx - 18pt,
-          dy: cy - 10pt,
-          text(size: 14pt, weight: "bold", fill: t.text-color)[#calc.round(progress * 100, digits: 0)%]
+        place(center + horizon,
+          text(size: t.value-label-size, weight: "bold", fill: t.text-color)[#calc.round(progress * 100, digits: 0)%]
         )
       }
     ]
@@ -367,15 +345,14 @@
   max-val: auto,
   background: luma(230),
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "progress-bars")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let labels = data.labels
   let values = data.values
   let n = labels.len()
 
-  let actual-max = if max-val == auto { calc.max(..values) } else { max-val }
-  if actual-max == 0 { actual-max = 1 }
+  let actual-max = nonzero(if max-val == auto { calc.max(..values) } else { max-val })
 
   box(width: width)[
     #if title != none {
