@@ -69,7 +69,7 @@ just demo       # Compile the comprehensive demo
 
 - **51 chart types** for data visualization
 - **JSON data input** — load data directly from JSON files
-- **Theme system** — preset themes and custom overrides for consistent styling
+- **Theme system** — preset themes, custom overrides, and `with-theme()` for document-wide defaults
 - **Layout primitives** — shared utilities for label density, font scaling, and label placement
 - **Annotations** — overlay reference lines, bands, and labels on Cartesian charts
 - **Customizable** — colors, sizes, labels, legends
@@ -222,6 +222,22 @@ Every chart function accepts an optional `theme` parameter. Themes control color
 #import "@preview/primaviz:0.2.0": *
 
 #bar-chart(data, theme: themes.dark)
+```
+
+### Document-wide theme
+
+Use `with-theme()` to set a default theme for all charts in a block — no need to pass `theme:` to every chart. Explicit per-chart `theme:` parameters still override.
+
+```typst
+// Block wrapper
+#with-theme(themes.dark)[
+  #bar-chart(data)       // uses dark theme
+  #pie-chart(data2)      // uses dark theme
+  #line-chart(data3, theme: themes.minimal) // explicit override wins
+]
+
+// Or as a show rule for the entire document
+#show: with-theme.with(themes.dark)
 ```
 
 ### Custom overrides
