@@ -43,6 +43,7 @@ just demo       # Compile the comprehensive demo
 - **51 chart types** for data visualization
 - **JSON data input** — load data directly from JSON files
 - **Theme system** — preset themes, custom overrides, and `with-theme()` for document-wide defaults
+- **Smart label placement** — automatic fit detection, font shrinking, and greedy deconfliction for overlapping labels
 - **Layout primitives** — shared utilities for label density, font scaling, and label placement
 - **Annotations** — overlay reference lines, bands, and labels on Cartesian charts
 - **Customizable** — colors, sizes, labels, legends
@@ -75,7 +76,7 @@ just demo       # Compile the comprehensive demo
 ### Scatter & Bubble
 - `scatter-plot` - X/Y point plotting
 - `multi-scatter-plot` - Multi-series scatter
-- `bubble-chart` - Scatter with size dimension
+- `bubble-chart` - Scatter with size dimension, smart label deconfliction (inside/outside with leaders)
 - `multi-bubble-chart` - Multi-series bubble chart
 
 ### Gauges & Progress
@@ -98,7 +99,7 @@ just demo       # Compile the comprehensive demo
 ### Statistical
 - `histogram` - Auto-binned frequency distribution
 - `waterfall-chart` - Bridge/waterfall chart with pos/neg/total segments
-- `funnel-chart` - Conversion funnel with percentages
+- `funnel-chart` - Conversion funnel with percentages, auto external labels for narrow sections
 - `box-plot` - Box-and-whisker distribution plot
 - `treemap` - Nested rectangles for hierarchical data
 - `slope-chart` - Two-period comparison with connecting lines
@@ -336,7 +337,7 @@ primaviz/
       wordcloud.typ          # spiral-placement word cloud
     primitives/              # Low-level drawing helpers
       axes.typ               # axis lines, ticks, labels, grid, cartesian-layout
-      layout.typ             # density-skip, font-for-space, page-grid, label placement
+      layout.typ             # density-skip, font-for-space, page-grid, label placement, deconfliction
       annotations.typ        # reference lines, bands, labels
       container.typ          # chart container wrapper
       legend.typ             # horizontal, vertical, draw-legend-auto
