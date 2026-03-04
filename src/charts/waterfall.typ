@@ -1,7 +1,7 @@
 // waterfall.typ - Waterfall chart (bridge chart)
 #import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": normalize-data, format-number, nonzero, nice-ceil
-#import "../validate.typ": validate-waterfall-data
+#import "../validate.typ": validate-simple-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-axis-titles, draw-y-ticks, draw-x-category-labels
 
@@ -36,7 +36,7 @@
   y-label: none,
   theme: none,
 ) = context {
-  validate-waterfall-data(data, "waterfall-chart")
+  validate-simple-data(data, "waterfall-chart")
   let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels

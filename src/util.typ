@@ -220,6 +220,17 @@
   nice * base
 }
 
+/// Computes nice-rounded (min, max, range) for a numeric array.
+/// Returns a dictionary with `min`, `max`, and `range` (nonzero-guarded) keys.
+///
+/// - vals (array): Array of numbers
+/// -> dictionary
+#let numeric-range(vals) = {
+  let lo = nice-floor(calc.min(..vals))
+  let hi = nice-ceil(calc.max(..vals))
+  (min: lo, max: hi, range: nonzero(hi - lo))
+}
+
 #let percent-of-total(data) = {
   let total = data.values.sum()
   if total == 0 { return data }

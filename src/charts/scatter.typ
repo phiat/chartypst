@@ -1,6 +1,6 @@
 // scatter.typ - Scatter plot and bubble chart
 #import "../theme.typ": resolve-theme, _resolve-ctx, get-color
-#import "../util.typ": nonzero, clamp, nice-ceil, nice-floor
+#import "../util.typ": nonzero, clamp, nice-ceil, nice-floor, numeric-range
 #import "../primitives/layout.typ": label-fits-inside, place-cartesian-label
 #import "../validate.typ": validate-scatter-data, validate-multi-scatter-data, validate-bubble-data, validate-multi-bubble-data
 #import "../primitives/container.typ": chart-container
@@ -17,7 +17,7 @@
 /// - x-label (none, content): X-axis title
 /// - y-label (none, content): Y-axis title
 /// - point-size (length): Diameter of point markers
-/// - show-grid (bool): Draw background grid lines
+/// - show-grid (auto, bool): Draw background grid lines; `auto` uses theme default
 /// - color (none, color): Override point color
 /// - annotations (none, array): Optional annotation descriptors
 /// - theme (none, dictionary): Theme overrides
@@ -30,13 +30,14 @@
   x-label: none,
   y-label: none,
   point-size: 5pt,
-  show-grid: true,
+  show-grid: auto,
   color: none,
   annotations: none,
   theme: none,
 ) = context {
   validate-scatter-data(data, "scatter-plot")
-  let t = _resolve-ctx(theme)
+  let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
+  let t = _resolve-ctx(theme, overrides: grid-overrides)
   // Normalize data format
   let points = if type(data) == dictionary {
     data.x.zip(data.y)
@@ -47,13 +48,10 @@
   let x-vals = points.map(p => p.at(0))
   let y-vals = points.map(p => p.at(1))
 
-  let x-min = nice-floor(calc.min(..x-vals))
-  let x-max = nice-ceil(calc.max(..x-vals))
-  let y-min = nice-floor(calc.min(..y-vals))
-  let y-max = nice-ceil(calc.max(..y-vals))
-
-  let x-range = nonzero(x-max - x-min)
-  let y-range = nonzero(y-max - y-min)
+  let xr = numeric-range(x-vals)
+  let yr = numeric-range(y-vals)
+  let (x-min, x-max, x-range) = (xr.min, xr.max, xr.range)
+  let (y-min, y-max, y-range) = (yr.min, yr.max, yr.range)
 
   let point-color = if color != none { color } else { get-color(t, 0) }
 
@@ -68,7 +66,7 @@
 
     #box(width: width, height: height)[
       // Grid lines
-      #if show-grid {
+      #if t.show-grid {
         draw-grid(origin-x, pad-top, chart-width, chart-height, t)
       }
 
@@ -115,7 +113,7 @@
 /// - x-label (none, content): X-axis title
 /// - y-label (none, content): Y-axis title
 /// - point-size (length): Diameter of point markers
-/// - show-grid (bool): Draw background grid lines
+/// - show-grid (auto, bool): Draw background grid lines; `auto` uses theme default
 /// - show-legend (bool): Show series legend
 /// - theme (none, dictionary): Theme overrides
 /// -> content
@@ -127,12 +125,13 @@
   x-label: none,
   y-label: none,
   point-size: 5pt,
-  show-grid: true,
+  show-grid: auto,
   show-legend: true,
   theme: none,
 ) = context {
   validate-multi-scatter-data(data, "multi-scatter-plot")
-  let t = _resolve-ctx(theme)
+  let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
+  let t = _resolve-ctx(theme, overrides: grid-overrides)
   let series = data.series
 
   // Get all points to find ranges
@@ -145,13 +144,10 @@
     }
   }
 
-  let x-min = nice-floor(calc.min(..x-vals))
-  let x-max = nice-ceil(calc.max(..x-vals))
-  let y-min = nice-floor(calc.min(..y-vals))
-  let y-max = nice-ceil(calc.max(..y-vals))
-
-  let x-range = nonzero(x-max - x-min)
-  let y-range = nonzero(y-max - y-min)
+  let xr = numeric-range(x-vals)
+  let yr = numeric-range(y-vals)
+  let (x-min, x-max, x-range) = (xr.min, xr.max, xr.range)
+  let (y-min, y-max, y-range) = (yr.min, yr.max, yr.range)
 
   let cl = cartesian-layout(width, height, t, extra-left: 10pt)
 
@@ -164,7 +160,7 @@
 
     #box(width: width, height: height)[
       // Grid lines
-      #if show-grid {
+      #if t.show-grid {
         draw-grid(origin-x, pad-top, chart-width, chart-height, t)
       }
 
@@ -212,7 +208,7 @@
 /// - y-label (none, content): Y-axis title
 /// - min-radius (length): Minimum bubble radius
 /// - max-radius (length): Maximum bubble radius
-/// - show-grid (bool): Draw background grid lines
+/// - show-grid (auto, bool): Draw background grid lines; `auto` uses theme default
 /// - color (none, color): Override bubble color
 /// - show-labels (bool): Display text labels on bubbles
 /// - labels (none, array): Array of label strings for each bubble
@@ -227,14 +223,15 @@
   y-label: none,
   min-radius: 5pt,
   max-radius: 30pt,
-  show-grid: true,
+  show-grid: auto,
   color: none,
   show-labels: false,
   labels: none,
   theme: none,
 ) = context {
   validate-bubble-data(data, "bubble-chart")
-  let t = _resolve-ctx(theme)
+  let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
+  let t = _resolve-ctx(theme, overrides: grid-overrides)
   // Normalize data format
   let points = if type(data) == dictionary {
     let zipped = data.x.zip(data.y).zip(data.size)
@@ -247,15 +244,12 @@
   let y-vals = points.map(p => p.at(1))
   let size-vals = points.map(p => p.at(2))
 
-  let x-min = nice-floor(calc.min(..x-vals))
-  let x-max = nice-ceil(calc.max(..x-vals))
-  let y-min = nice-floor(calc.min(..y-vals))
-  let y-max = nice-ceil(calc.max(..y-vals))
+  let xr = numeric-range(x-vals)
+  let yr = numeric-range(y-vals)
+  let (x-min, x-max, x-range) = (xr.min, xr.max, xr.range)
+  let (y-min, y-max, y-range) = (yr.min, yr.max, yr.range)
   let size-min = calc.min(..size-vals)
   let size-max = calc.max(..size-vals)
-
-  let x-range = nonzero(x-max - x-min)
-  let y-range = nonzero(y-max - y-min)
   let size-range = nonzero(size-max - size-min)
 
   let bubble-color = if color != none { color } else { get-color(t, 0) }
@@ -271,7 +265,7 @@
 
     #box(width: width, height: height)[
       // Grid lines
-      #if show-grid {
+      #if t.show-grid {
         draw-grid(origin-x, pad-top, chart-width, chart-height, t)
       }
 
@@ -345,7 +339,7 @@
 /// - y-label (none, content): Y-axis title
 /// - min-radius (length): Minimum bubble radius
 /// - max-radius (length): Maximum bubble radius
-/// - show-grid (bool): Draw background grid lines
+/// - show-grid (auto, bool): Draw background grid lines; `auto` uses theme default
 /// - show-legend (bool): Show series legend
 /// - theme (none, dictionary): Theme overrides
 /// -> content
@@ -358,12 +352,13 @@
   y-label: none,
   min-radius: 4pt,
   max-radius: 25pt,
-  show-grid: true,
+  show-grid: auto,
   show-legend: true,
   theme: none,
 ) = context {
   validate-multi-bubble-data(data, "multi-bubble-chart")
-  let t = _resolve-ctx(theme)
+  let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
+  let t = _resolve-ctx(theme, overrides: grid-overrides)
   let series = data.series
 
   // Collect all x, y, size values across all series for axis/size scaling
@@ -378,15 +373,12 @@
     }
   }
 
-  let x-min = nice-floor(calc.min(..x-vals))
-  let x-max = nice-ceil(calc.max(..x-vals))
-  let y-min = nice-floor(calc.min(..y-vals))
-  let y-max = nice-ceil(calc.max(..y-vals))
+  let xr = numeric-range(x-vals)
+  let yr = numeric-range(y-vals)
+  let (x-min, x-max, x-range) = (xr.min, xr.max, xr.range)
+  let (y-min, y-max, y-range) = (yr.min, yr.max, yr.range)
   let size-min = calc.min(..size-vals)
   let size-max = calc.max(..size-vals)
-
-  let x-range = nonzero(x-max - x-min)
-  let y-range = nonzero(y-max - y-min)
   let size-range = nonzero(size-max - size-min)
 
   let cl = cartesian-layout(width, height, t, extra-left: 10pt)
@@ -400,7 +392,7 @@
 
     #box(width: width, height: height)[
       // Grid lines
-      #if show-grid {
+      #if t.show-grid {
         draw-grid(origin-x, pad-top, chart-width, chart-height, t)
       }
 

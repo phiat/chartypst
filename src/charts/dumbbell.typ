@@ -4,6 +4,7 @@
 #import "../validate.typ": validate-dumbbell-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/legend.typ": draw-legend-auto
+#import "../primitives/axes.typ": draw-y-label
 
 /// Renders a dumbbell chart showing range or before/after comparisons.
 ///
@@ -104,7 +105,7 @@
       )
 
       // Draw a few tick marks on the value axis
-      #let tick-count = 5
+      #let tick-count = t.tick-count
       #for ti in range(tick-count + 1) {
         let frac = ti / tick-count
         let val = min-val + frac * val-range
@@ -136,13 +137,7 @@
         let x-end = val-to-x(ev)
 
         // Category label on the left — right-aligned into label margin
-        place(left + top,
-          dx: 0pt,
-          dy: y,
-          box(width: label-margin - 4pt, height: 0pt,
-            align(right, move(dy: -0.5em,
-              text(size: t.axis-label-size, fill: t.text-color)[#lbl])))
-        )
+        draw-y-label(lbl, y, label-margin, t)
 
         // Connecting line (muted gray)
         place(left + top,
@@ -174,14 +169,14 @@
           place(left + top,
             dx: s-dx,
             dy: y,
-            move(dy: -0.5em, text(size: 6pt, fill: start-color)[#sv])
+            move(dy: -0.5em, text(size: t.value-label-size, fill: start-color)[#sv])
           )
           // Value near end dot
           let e-dx = if ev >= sv { x-end + dot-size + 3pt } else { x-end - 20pt }
           place(left + top,
             dx: e-dx,
             dy: y,
-            move(dy: -0.5em, text(size: 6pt, fill: end-color)[#ev])
+            move(dy: -0.5em, text(size: t.value-label-size, fill: end-color)[#ev])
           )
         }
       }

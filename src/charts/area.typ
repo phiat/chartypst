@@ -3,7 +3,7 @@
 #import "../util.typ": normalize-data, nonzero, nice-ceil
 #import "../validate.typ": validate-simple-data, validate-series-data
 #import "../primitives/container.typ": chart-container
-#import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-axis-titles, draw-y-ticks
+#import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-axis-titles, draw-y-ticks, draw-x-even-labels
 #import "../primitives/legend.typ": draw-legend-auto
 
 /// Renders a single-series area chart with a filled region below the line.
@@ -123,14 +123,7 @@
       }
 
       // X-axis labels — spread evenly across chart width
-      #let x-spacing = if n > 1 { chart-width / (n - 1) } else { chart-width }
-      #for (i, lbl) in labels.enumerate() {
-        let x = if n == 1 { origin-x } else { origin-x + (i / (n - 1)) * chart-width }
-        place(left + top, dx: x - x-spacing / 2, dy: origin-y + 4pt,
-          box(width: x-spacing, height: 1.5em,
-            align(center + top, text(size: t.axis-label-size, fill: t.text-color)[#lbl]))
-        )
-      }
+      #draw-x-even-labels(labels, n, origin-x, chart-width, origin-y, t)
 
       // Axis titles
       #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, origin-y / 2, t)
@@ -239,14 +232,7 @@
       }
 
       // X-axis labels — spread evenly across chart width
-      #let x-spacing = if n > 1 { chart-width / (n - 1) } else { chart-width }
-      #for (i, lbl) in labels.enumerate() {
-        let x = if n == 1 { origin-x } else { origin-x + (i / (n - 1)) * chart-width }
-        place(left + top, dx: x - x-spacing / 2, dy: origin-y + 4pt,
-          box(width: x-spacing, height: 1.5em,
-            align(center + top, text(size: t.axis-label-size, fill: t.text-color)[#lbl]))
-        )
-      }
+      #draw-x-even-labels(labels, n, origin-x, chart-width, origin-y, t)
 
       // Axis titles
       #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, origin-y / 2, t)

@@ -3,7 +3,7 @@
 #import "../util.typ": normalize-data, nonzero, nice-ceil
 #import "../validate.typ": validate-simple-data
 #import "../primitives/container.typ": chart-container
-#import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-axis-titles, draw-y-ticks, draw-x-ticks, draw-x-category-labels
+#import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-axis-titles, draw-y-ticks, draw-x-ticks, draw-x-category-labels, draw-y-label
 #import "../primitives/annotations.typ": draw-annotations
 
 /// Renders a vertical lollipop chart with a thin stem and circle dot per category.
@@ -218,14 +218,7 @@
         }
 
         // Y-axis label (category) — right-aligned into the padding area
-        place(
-          left + top,
-          dx: 0pt,
-          dy: y-center,
-          box(width: origin-x - 4pt, height: 0pt,
-            align(right, move(dy: -0.5em,
-              text(size: t.axis-label-size, fill: t.text-color)[#labels.at(i)])))
-        )
+        draw-y-label(labels.at(i), y-center, origin-x, t)
       }
 
       // Axis titles

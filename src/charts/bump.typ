@@ -3,7 +3,7 @@
 #import "../util.typ": nonzero
 #import "../validate.typ": validate-series-data
 #import "../primitives/container.typ": chart-container
-#import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-axis-titles
+#import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-axis-titles, draw-x-even-labels
 #import "../primitives/legend.typ": draw-legend-auto
 
 /// Renders a bump chart showing how items change ranking over time periods.
@@ -130,14 +130,7 @@
       }
 
       // X-axis labels — spread evenly across chart width
-      #let x-spacing = if n > 1 { chart-width / (n - 1) } else { chart-width }
-      #for (i, lbl) in labels.enumerate() {
-        let x = if n == 1 { origin-x } else { origin-x + (i / (n - 1)) * chart-width }
-        place(left + top, dx: x - x-spacing / 2, dy: origin-y + 4pt,
-          box(width: x-spacing, height: 1.5em,
-            align(center + top, text(size: t.axis-label-size, fill: t.text-color)[#lbl]))
-        )
-      }
+      #draw-x-even-labels(labels, n, origin-x, chart-width, origin-y, t)
 
       // Y-axis labels (rank numbers) — only shown when series labels are off
       #if not show-labels {

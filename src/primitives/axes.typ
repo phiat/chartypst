@@ -47,18 +47,26 @@
 
 // Draw tick labels along the Y axis.
 // Labels are right-aligned into the padding area left of x-pos, vertically centered on the tick.
-#let draw-y-ticks(min-val, max-val, chart-height, y-offset, x-pos, theme, digits: 1) = {
+// Optional `color` overrides theme.text-color (useful for dual-axis charts).
+// Optional `side` ("left" or "right") controls label placement; "right" places labels after x-pos.
+#let draw-y-ticks(min-val, max-val, chart-height, y-offset, x-pos, theme, digits: 1, color: auto, side: "left") = {
   let tick-count = theme.tick-count
   let val-range = max-val - min-val
+  let fill-color = if color != auto { color } else { theme.text-color }
   for i in array.range(tick-count) {
     let fraction = if tick-count > 1 { i / (tick-count - 1) } else { 0 }
     let value = min-val + val-range * fraction
     let y = y-offset + chart-height - fraction * chart-height
-    place(left + top, dx: 0pt, dy: y,
-      box(width: x-pos - 2pt, height: 0pt,
-        align(right, move(dy: -0.5em,
-          text(size: theme.axis-label-size, fill: theme.text-color)[#format-number(value, digits: digits, mode: theme.number-format)])))
-    )
+    let label = format-number(value, digits: digits, mode: theme.number-format)
+    if side == "right" {
+      place(left + top, dx: x-pos + 4pt, dy: y,
+        move(dy: -0.5em, text(size: theme.axis-label-size, fill: fill-color)[#label]))
+    } else {
+      place(left + top, dx: 0pt, dy: y,
+        box(width: x-pos - 2pt, height: 0pt,
+          align(right, move(dy: -0.5em,
+            text(size: theme.axis-label-size, fill: fill-color)[#label]))))
+    }
   }
 }
 
@@ -101,6 +109,26 @@
         align(center + top, text(size: theme.axis-label-size, fill: theme.text-color)[#format-number(value, digits: digits, mode: theme.number-format)]))
     )
   }
+}
+
+// Draw evenly-spaced x-axis labels (for line/area/bump charts where points are spread uniformly).
+#let draw-x-even-labels(labels, n, origin-x, chart-width, origin-y, theme) = {
+  let x-spacing = if n > 1 { chart-width / (n - 1) } else { chart-width }
+  for (i, lbl) in labels.enumerate() {
+    let x = if n == 1 { origin-x } else { origin-x + (i / (n - 1)) * chart-width }
+    place(left + top, dx: x - x-spacing / 2, dy: origin-y + 4pt,
+      box(width: x-spacing, height: 1.5em,
+        align(center + top, text(size: theme.axis-label-size, fill: theme.text-color)[#lbl])))
+  }
+}
+
+// Draw a single right-aligned y-axis category label in the left margin.
+// Used by horizontal charts (horizontal-bar, horizontal-lollipop, dumbbell, diverging).
+#let draw-y-label(label, y, margin-width, theme) = {
+  place(left + top, dx: 0pt, dy: y,
+    box(width: margin-width - 4pt, height: 0pt,
+      align(right, move(dy: -0.5em,
+        text(size: theme.axis-label-size, fill: theme.text-color)[#label]))))
 }
 
 // Draw grid lines behind chart area.

@@ -155,11 +155,6 @@
   }
 }
 
-// Validate waterfall data (labels + values, optional types)
-#let validate-waterfall-data(data, chart-name) = {
-  validate-simple-data(data, chart-name)
-}
-
 // Validate grouped-stacked data (labels + groups, each with name + segments)
 #let validate-grouped-stacked-data(data, chart-name) = {
   assert(type(data) == dictionary, message: chart-name + ": data must be a dictionary")

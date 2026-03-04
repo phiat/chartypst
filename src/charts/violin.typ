@@ -45,11 +45,6 @@
   let datasets = data.datasets
   let n = labels.len()
 
-  // ── Helper: sort an array of numbers ──────────────────────────────────
-  let sort-arr(arr) = {
-    arr.sorted()
-  }
-
   // ── Helper: compute mean ──────────────────────────────────────────────
   let mean(arr) = {
     let s = 0
@@ -143,7 +138,7 @@
   let kdes = ()
   let global-max-density = 0.0
   for ds in datasets {
-    let sorted = sort-arr(ds)
+    let sorted = ds.sorted()
     let kde = compute-kde(sorted)
     kdes.push(kde)
     if kde.max-density > global-max-density {
@@ -231,7 +226,7 @@
 
         // Optional inner box-plot
         if show-box {
-          let ds-sorted = sort-arr(datasets.at(i))
+          let ds-sorted = datasets.at(i).sorted()
           let q = quartiles(ds-sorted)
           let box-half-w = max-half-w * 0.15
           let whisker-stroke = 1pt + t.text-color

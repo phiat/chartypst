@@ -2,9 +2,9 @@
 #import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../validate.typ": validate-dual-axis-data
 #import "../primitives/container.typ": chart-container
-#import "../primitives/axes.typ": cartesian-layout, draw-grid, draw-axis-titles
+#import "../primitives/axes.typ": cartesian-layout, draw-grid, draw-axis-titles, draw-x-even-labels, draw-y-ticks
 #import "../primitives/legend.typ": draw-legend-auto
-#import "../util.typ": format-number, nonzero, nice-ceil
+#import "../util.typ": nonzero, nice-ceil
 
 #let dual-axis-chart(
   data,
@@ -64,27 +64,10 @@
       #place(left + top, line(start: (origin-x, origin-y), end: (origin-x + chart-width, origin-y), stroke: t.axis-stroke))
 
       // Left Y-axis ticks — right-aligned into left padding
-      #for i in array.range(t.tick-count) {
-        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
-        let y-val = l-min + l-range * fraction
-        let y = pad-top + chart-height - fraction * chart-height
-        place(left + top, dx: 0pt, dy: y,
-          box(width: origin-x - 2pt, height: 0pt,
-            align(right, move(dy: -0.5em,
-              text(size: t.axis-label-size, fill: l-color)[#format-number(y-val, digits: 1, mode: t.number-format)])))
-        )
-      }
+      #draw-y-ticks(l-min, l-max, chart-height, pad-top, origin-x, t, color: l-color)
 
       // Right Y-axis ticks — left-aligned after right axis
-      #for i in array.range(t.tick-count) {
-        let fraction = if t.tick-count > 1 { i / (t.tick-count - 1) } else { 0 }
-        let y-val = r-min + r-range * fraction
-        let y = pad-top + chart-height - fraction * chart-height
-        place(left + top, dx: origin-x + chart-width + 4pt, dy: y,
-          move(dy: -0.5em,
-            text(size: t.axis-label-size, fill: r-color)[#format-number(y-val, digits: 1, mode: t.number-format)])
-        )
-      }
+      #draw-y-ticks(r-min, r-max, chart-height, pad-top, origin-x + chart-width, t, color: r-color, side: "right")
 
       // Compute left series points
       #let l-points = ()
@@ -151,14 +134,7 @@
       }
 
       // X-axis category labels — spread evenly across chart width
-      #let x-spacing = if n > 1 { chart-width / (n - 1) } else { chart-width }
-      #for (i, lbl) in labels.enumerate() {
-        let x = if n == 1 { origin-x } else { origin-x + (i / (n - 1)) * chart-width }
-        place(left + top, dx: x - x-spacing / 2, dy: origin-y + 4pt,
-          box(width: x-spacing, height: 1.5em,
-            align(center + top, text(size: t.axis-label-size, fill: t.text-color)[#lbl]))
-        )
-      }
+      #draw-x-even-labels(labels, n, origin-x, chart-width, origin-y, t)
 
       // Axis labels
       #if left-label != none {

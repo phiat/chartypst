@@ -4,6 +4,7 @@
 #import "../validate.typ": validate-diverging-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/legend.typ": draw-legend-auto
+#import "../primitives/axes.typ": draw-y-label
 
 /// Renders a horizontal diverging bar chart where bars extend left and right
 /// from a central vertical axis. Useful for survey results (agree/disagree),
@@ -133,14 +134,7 @@
         }
 
         // Category label on the far left — right-aligned into label area
-        place(
-          left + top,
-          dx: 0pt,
-          dy: y-pos + actual-bar-h / 2,
-          box(width: label-area - 4pt, height: 0pt,
-            align(right, move(dy: -0.5em,
-              text(size: t.axis-label-size, fill: t.text-color)[#label])))
-        )
+        draw-y-label(label, y-pos + actual-bar-h / 2, label-area, t)
       }
 
       // X-axis tick labels (symmetric around center) — below the bar area
