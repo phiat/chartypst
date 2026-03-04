@@ -1,5 +1,5 @@
 // rings.typ - Donut progress / fitness rings chart (Apple Watch style)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../validate.typ": validate-ring-data
 #import "../primitives/container.typ": chart-container
 
@@ -15,9 +15,9 @@
   show-labels: true,
   show-values: true,
   theme: none,
-) = {
+) = context {
   validate-ring-data(entries, "ring-progress")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let n = entries.len()
 
   // Total width needed for labels column

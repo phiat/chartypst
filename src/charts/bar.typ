@@ -1,5 +1,5 @@
 // bar.typ - Bar charts (simple, horizontal, grouped, stacked, grouped-stacked)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": normalize-data, nonzero, nice-ceil
 #import "../validate.typ": validate-simple-data, validate-series-data, validate-grouped-stacked-data
 #import "../primitives/container.typ": chart-container
@@ -30,9 +30,9 @@
   x-label: none,
   y-label: none,
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "horizontal-bar-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values
@@ -130,9 +130,9 @@
   y-label: none,
   annotations: none,
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "bar-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values
@@ -221,9 +221,9 @@
   x-label: none,
   y-label: none,
   theme: none,
-) = {
+) = context {
   validate-series-data(data, "grouped-bar-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let labels = data.labels
   let series = data.series
   let n-groups = labels.len()
@@ -305,9 +305,9 @@
   x-label: none,
   y-label: none,
   theme: none,
-) = {
+) = context {
   validate-series-data(data, "stacked-bar-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let labels = data.labels
   let series = data.series
   let n = labels.len()
@@ -401,9 +401,9 @@
   y-label: none,
   annotations: none,
   theme: none,
-) = {
+) = context {
   validate-grouped-stacked-data(data, "grouped-stacked-bar-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let labels = data.labels
   let groups = data.groups
   let n-labels = labels.len()

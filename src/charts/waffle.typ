@@ -1,5 +1,5 @@
 // waffle.typ - Waffle chart (grid of squares showing proportions)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": normalize-data, nonzero
 #import "../validate.typ": validate-simple-data
 #import "../primitives/container.typ": chart-container
@@ -34,9 +34,9 @@
   show-legend: true,
   show-values: true,
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "waffle-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values

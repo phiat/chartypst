@@ -1,5 +1,5 @@
 // funnel.typ - Funnel chart for process/conversion stages
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": normalize-data, format-number
 #import "../validate.typ": validate-simple-data
 #import "../primitives/container.typ": chart-container
@@ -24,9 +24,9 @@
   show-percentages: true,
   gap: 3pt,
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "funnel-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values

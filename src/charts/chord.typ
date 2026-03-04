@@ -1,5 +1,5 @@
 // chord.typ - Chord diagrams showing flows between entities
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../validate.typ": validate-chord-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/polar.typ": arc-points as polar-arc-points, place-polar-label
@@ -31,9 +31,9 @@
   show-labels: true,
   gap: 2,
   theme: none,
-) = {
+) = context {
   validate-chord-data(data, "chord-diagram")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
 
   let labels = data.labels
   let matrix = data.matrix

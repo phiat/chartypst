@@ -1,5 +1,5 @@
 // radar.typ - Radar/spider charts
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../validate.typ": validate-series-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/legend.typ": draw-legend-vertical
@@ -24,9 +24,9 @@
   show-value-labels: true,
   fill-opacity: 30%,
   theme: none,
-) = {
+) = context {
   validate-series-data(data, "radar-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let labels = data.labels
   let series = data.series
   let n = labels.len()

@@ -1,5 +1,5 @@
 // sunburst.typ - Multi-level pie/donut chart for hierarchical data
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../validate.typ": validate-sunburst-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/polar.typ": annular-wedge-points, separator-stroke
@@ -85,9 +85,9 @@
   title: none,
   show-labels: true,
   theme: none,
-) = {
+) = context {
   validate-sunburst-data(data, "sunburst-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
 
   // Compute depth (excluding root) to determine how many rings we need
   let total-depth = _max-depth(data) - 1  // rings = depth levels below root

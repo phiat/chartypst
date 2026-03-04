@@ -1,5 +1,5 @@
 // boxplot.typ - Box-and-whisker plot
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": nonzero, nice-ceil
 #import "../validate.typ": validate-boxplot-data
 #import "../primitives/container.typ": chart-container
@@ -29,10 +29,10 @@
   x-label: none,
   y-label: none,
   theme: none,
-) = {
+) = context {
   validate-boxplot-data(data, "box-plot")
   let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
-  let t = resolve-theme(theme, overrides: grid-overrides)
+  let t = _resolve-ctx(theme, overrides: grid-overrides)
 
   let labels = data.labels
   let boxes = data.boxes

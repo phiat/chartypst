@@ -1,5 +1,5 @@
 // scatter.typ - Scatter plot and bubble chart
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": nonzero, clamp, nice-ceil, nice-floor
 #import "../primitives/layout.typ": label-fits-inside, place-cartesian-label
 #import "../validate.typ": validate-scatter-data, validate-multi-scatter-data, validate-bubble-data, validate-multi-bubble-data
@@ -34,9 +34,9 @@
   color: none,
   annotations: none,
   theme: none,
-) = {
+) = context {
   validate-scatter-data(data, "scatter-plot")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   // Normalize data format
   let points = if type(data) == dictionary {
     data.x.zip(data.y)
@@ -130,9 +130,9 @@
   show-grid: true,
   show-legend: true,
   theme: none,
-) = {
+) = context {
   validate-multi-scatter-data(data, "multi-scatter-plot")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let series = data.series
 
   // Get all points to find ranges
@@ -232,9 +232,9 @@
   show-labels: false,
   labels: none,
   theme: none,
-) = {
+) = context {
   validate-bubble-data(data, "bubble-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   // Normalize data format
   let points = if type(data) == dictionary {
     let zipped = data.x.zip(data.y).zip(data.size)
@@ -361,9 +361,9 @@
   show-grid: true,
   show-legend: true,
   theme: none,
-) = {
+) = context {
   validate-multi-bubble-data(data, "multi-bubble-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let series = data.series
 
   // Collect all x, y, size values across all series for axis/size scaling

@@ -2,7 +2,7 @@
 // A compact gauge replacement showing a quantitative measure against a target
 // with qualitative ranges (poor/satisfactory/good).
 
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": nonzero
 #import "../validate.typ": validate-bullet-data, validate-bullet-charts-data
 #import "../primitives/container.typ": chart-container
@@ -30,9 +30,9 @@
   label: none,
   show-target: true,
   theme: none,
-) = {
+) = context {
   validate-bullet-data((value: value, target: target, ranges: ranges), "bullet-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let bar-color = get-color(t, 0)
 
   let max-range = nonzero(ranges.last())
@@ -132,9 +132,9 @@
   gap: 15pt,
   title: none,
   theme: none,
-) = {
+) = context {
   validate-bullet-charts-data(data, "bullet-charts")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let bullets = data.bullets
   let n = bullets.len()
 

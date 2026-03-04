@@ -1,5 +1,5 @@
 // timeline.typ - Vertical event timeline chart
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../validate.typ": validate-timeline-data
 #import "../primitives/container.typ": chart-container
 
@@ -24,9 +24,9 @@
   title: none,
   marker-size: 6pt,
   theme: none,
-) = {
+) = context {
   validate-timeline-data(data, "timeline-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let events = data.events
 
   // Auto-compute height from event count

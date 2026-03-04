@@ -1,5 +1,5 @@
 // bump.typ - Bump chart (multi-period ranking chart)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": nonzero
 #import "../validate.typ": validate-series-data
 #import "../primitives/container.typ": chart-container
@@ -33,9 +33,9 @@
   show-labels: true,
   show-legend: true,
   theme: none,
-) = {
+) = context {
   validate-series-data(data, "bump-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let labels = data.labels
   let series = data.series
 

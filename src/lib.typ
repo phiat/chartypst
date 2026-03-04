@@ -1,7 +1,7 @@
 // primaviz - Public entrypoint
 // Re-exports all chart types from individual modules
 
-#import "theme.typ": resolve-theme, get-color, default-theme, minimal-theme, dark-theme, presentation-theme, print-theme, accessible-theme, themes
+#import "theme.typ": resolve-theme, get-color, default-theme, minimal-theme, dark-theme, presentation-theme, print-theme, accessible-theme, themes, with-theme
 #import "charts/bar.typ": bar-chart, horizontal-bar-chart, grouped-bar-chart, stacked-bar-chart, grouped-stacked-bar-chart
 #import "charts/line.typ": line-chart, multi-line-chart
 #import "charts/dual-axis.typ": dual-axis-chart

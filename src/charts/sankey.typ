@@ -1,5 +1,5 @@
 // sankey.typ - Sankey / flow diagrams
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": nonzero
 #import "../validate.typ": validate-sankey-data
 #import "../primitives/container.typ": chart-container
@@ -28,9 +28,9 @@
   show-labels: true,
   show-values: false,
   theme: none,
-) = {
+) = context {
   validate-sankey-data(data, "sankey-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
 
   let nodes = data.nodes
   let flows = data.flows

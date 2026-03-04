@@ -1,5 +1,5 @@
 // heatmap.typ - Heatmap/matrix charts
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": lerp-color, heat-color, nonzero
 #import "../validate.typ": validate-heatmap-data, validate-calendar-data, validate-correlation-data
 #import "../primitives/container.typ": chart-container
@@ -23,9 +23,9 @@
   palette: "viridis",
   show-legend: true,
   theme: none,
-) = {
+) = context {
   validate-heatmap-data(data, "heatmap")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let rows = data.rows
   let cols = data.cols
   let values = data.values
@@ -156,9 +156,9 @@
   show-month-labels: true,
   show-day-labels: true,
   theme: none,
-) = {
+) = context {
   validate-calendar-data(data, "calendar-heatmap")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let dates = data.dates
   let values = data.values
   let n = dates.len()
@@ -245,9 +245,9 @@
   title: none,
   show-values: true,
   theme: none,
-) = {
+) = context {
   validate-correlation-data(data, "correlation-matrix")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let labels = data.labels
   let values = data.values
   let n = labels.len()

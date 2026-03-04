@@ -1,5 +1,5 @@
 // wordcloud.typ - Word cloud chart (flowing text layout)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": nonzero
 #import "../validate.typ": validate-wordcloud-data
 #import "../primitives/container.typ": chart-container
@@ -29,9 +29,9 @@
   title: none,
   padding: 8pt,
   theme: none,
-) = {
+) = context {
   validate-wordcloud-data(data, "word-cloud")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let words = data.words
 
   if words.len() == 0 { return }

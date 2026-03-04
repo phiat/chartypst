@@ -1,5 +1,5 @@
 // gauge.typ - Gauge/dial and progress indicators
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": nonzero, clamp
 #import "../validate.typ": validate-number, validate-simple-data
 #import "../primitives/container.typ": chart-container
@@ -30,9 +30,9 @@
   segments: none,
   needle-color: auto,
   theme: none,
-) = {
+) = context {
   validate-number(value, "gauge-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let needle-color = if needle-color == auto { t.text-color } else { needle-color }
   let margin = calc.max(3pt, size * 0.07)
   let radius = size / 2 - margin
@@ -172,9 +172,9 @@
   background: luma(230),
   rounded: true,
   theme: none,
-) = {
+) = context {
   validate-number(value, "progress-bar")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let progress = clamp(value / max-val, 0, 1)
   let bar-color = if color != none { color } else { get-color(t, 0) }
   let radius = if rounded { height / 2 } else { 0pt }
@@ -244,9 +244,9 @@
   color: none,
   background: luma(230),
   theme: none,
-) = {
+) = context {
   validate-number(value, "circular-progress")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let progress = clamp(value / max-val, 0, 1)
   let bar-color = if color != none { color } else { get-color(t, 0) }
   let radius = size / 2 - stroke-width / 2
@@ -345,9 +345,9 @@
   max-val: auto,
   background: luma(230),
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "progress-bars")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let labels = data.labels
   let values = data.values
   let n = labels.len()

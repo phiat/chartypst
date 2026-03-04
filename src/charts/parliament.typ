@@ -1,5 +1,5 @@
 // parliament.typ - Semicircular parliament/seat chart
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": normalize-data
 #import "../validate.typ": validate-simple-data
 #import "../primitives/container.typ": chart-container
@@ -26,9 +26,9 @@
   title: none,
   show-legend: true,
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "parliament-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values

@@ -1,5 +1,5 @@
 // dual-axis.typ - Dual Y-axis line chart
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../validate.typ": validate-dual-axis-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": cartesian-layout, draw-grid, draw-axis-titles
@@ -19,10 +19,10 @@
   x-label: none,
   show-grid: auto,
   theme: none,
-) = {
+) = context {
   validate-dual-axis-data(data, "dual-axis-chart")
   let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
-  let t = resolve-theme(theme, overrides: grid-overrides)
+  let t = _resolve-ctx(theme, overrides: grid-overrides)
 
   let labels = data.labels
   let left-series = data.left

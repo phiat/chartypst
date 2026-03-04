@@ -1,5 +1,5 @@
 // lollipop.typ - Lollipop charts (vertical and horizontal)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": normalize-data, nonzero, nice-ceil
 #import "../validate.typ": validate-simple-data
 #import "../primitives/container.typ": chart-container
@@ -36,9 +36,9 @@
   y-label: none,
   annotations: none,
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "lollipop-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values
@@ -147,9 +147,9 @@
   x-label: none,
   y-label: none,
   theme: none,
-) = {
+) = context {
   validate-simple-data(data, "horizontal-lollipop-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values

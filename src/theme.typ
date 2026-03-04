@@ -1,5 +1,8 @@
 // theme.typ - Theme system for primaviz
 
+// Global theme state — set via with-theme(), read by chart functions
+#let _primaviz-theme = state("primaviz-theme", none)
+
 // Default theme — flat keys, no nesting
 #let default-theme = (
   palette: (
@@ -62,6 +65,61 @@
     }
   }
   result
+}
+
+/// Context-aware theme resolver — reads from state when user-theme is none.
+/// Must be called inside a `context` block.
+///
+/// - user-theme (none, dictionary): Explicit theme overrides
+/// - overrides (none, dictionary): Additional per-call overrides
+/// -> dictionary
+#let _resolve-ctx(user-theme, overrides: none) = {
+  let effective = if user-theme != none {
+    user-theme
+  } else {
+    _primaviz-theme.get()  // may be none → falls through to default
+  }
+  let result = (:)
+  for (key, val) in default-theme {
+    if effective != none and key in effective {
+      result.insert(key, effective.at(key))
+    } else {
+      result.insert(key, val)
+    }
+  }
+  if overrides != none {
+    for (key, val) in overrides {
+      result.insert(key, val)
+    }
+  }
+  result
+}
+
+/// Sets a default theme for all charts in `body`.
+///
+/// Charts inside `body` that don't pass an explicit `theme:` parameter
+/// will use this theme instead of `themes.default`.
+///
+/// ```typst
+/// #with-theme(themes.dark)[
+///   #bar-chart(data)       // uses dark theme
+///   #pie-chart(data2)      // uses dark theme
+///   #line-chart(data3, theme: themes.minimal) // explicit override wins
+/// ]
+/// ```
+///
+/// Can also be used as a show rule for the entire document:
+/// ```typst
+/// #show: with-theme.with(themes.dark)
+/// ```
+///
+/// - theme (dictionary): Theme to use as default
+/// - body (content): Content whose charts inherit this theme
+/// -> content
+#let with-theme(theme, body) = {
+  _primaviz-theme.update(theme)
+  body
+  _primaviz-theme.update(none)
 }
 
 /// Returns a color from the theme palette, cycling if the index exceeds palette length.

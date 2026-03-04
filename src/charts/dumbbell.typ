@@ -1,5 +1,5 @@
 // dumbbell.typ - Dumbbell chart (before/after or range comparison)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": nonzero
 #import "../validate.typ": validate-dumbbell-data
 #import "../primitives/container.typ": chart-container
@@ -30,9 +30,9 @@
   line-width: 1.5pt,
   show-values: false,
   theme: none,
-) = {
+) = context {
   validate-dumbbell-data(data, "dumbbell-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
 
   let labels = data.labels
   let start-values = data.start-values

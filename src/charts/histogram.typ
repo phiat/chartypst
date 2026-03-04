@@ -1,5 +1,5 @@
 // histogram.typ - Histogram chart (frequency distribution of numeric data)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": nonzero, nice-ceil
 #import "../validate.typ": validate-histogram-data
 #import "../primitives/container.typ": chart-container
@@ -35,9 +35,9 @@
   x-label: none,
   y-label: none,
   theme: none,
-) = {
+) = context {
   validate-histogram-data(values, "histogram")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
 
   let n = values.len()
 

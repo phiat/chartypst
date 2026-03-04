@@ -1,5 +1,5 @@
 // slope.typ - Slope chart (two-period comparison)
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 #import "../util.typ": nonzero
 #import "../validate.typ": validate-slope-data
 #import "../primitives/container.typ": chart-container
@@ -28,9 +28,9 @@
   line-width: 1.5pt,
   show-values: true,
   theme: none,
-) = {
+) = context {
   validate-slope-data(data, "slope-chart")
-  let t = resolve-theme(theme)
+  let t = _resolve-ctx(theme)
 
   let labels = data.labels
   let start-values = data.start-values

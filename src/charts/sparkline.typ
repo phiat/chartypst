@@ -1,5 +1,5 @@
 // sparkline.typ - Tiny inline charts for tables and running text
-#import "../theme.typ": resolve-theme, get-color
+#import "../theme.typ": resolve-theme, _resolve-ctx, get-color
 
 /// Renders a tiny inline line chart (sparkline) suitable for tables and running text.
 ///
@@ -21,8 +21,8 @@
   fill-area: false,
   stroke-width: 1pt,
   theme: none,
-) = {
-  let t = resolve-theme(theme)
+) = context {
+  let t = _resolve-ctx(theme)
   let c = if color != none { color } else { get-color(t, 0) }
   let n = values.len()
 
@@ -100,8 +100,8 @@
   color: none,
   gap: 1pt,
   theme: none,
-) = {
-  let t = resolve-theme(theme)
+) = context {
+  let t = _resolve-ctx(theme)
   let c = if color != none { color } else { get-color(t, 0) }
   let n = values.len()
 
@@ -140,8 +140,8 @@
   color: none,
   dot-size: 2.5pt,
   theme: none,
-) = {
-  let t = resolve-theme(theme)
+) = context {
+  let t = _resolve-ctx(theme)
   let c = if color != none { color } else { get-color(t, 0) }
   let n = values.len()
 
