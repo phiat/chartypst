@@ -173,7 +173,7 @@
       #draw-axis-lines(origin-x, origin-y, origin-x + chart-width, y-start, t)
 
       // Y-axis ticks
-      #draw-y-ticks(y-min, y-max, chart-height, y-start, 2pt, t, digits: 1)
+      #draw-y-ticks(y-min, y-max, chart-height, y-start, origin-x, t, digits: 1)
 
       // X-axis category labels
       #let spacing = chart-width / n

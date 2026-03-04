@@ -117,7 +117,7 @@
       #draw-axis-lines(origin-x, origin-y, origin-x + chart-width, pad-top, t)
 
       // Y-axis ticks
-      #draw-y-ticks(y-min, y-max, chart-height, pad-top, 0pt, t, digits: 0)
+      #draw-y-ticks(y-min, y-max, chart-height, pad-top, origin-x, t, digits: 0)
 
       // Spacing per bar
       #let spacing = chart-width / n

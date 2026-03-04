@@ -96,7 +96,7 @@
     #let origin-x = cl.origin-x
     #let origin-y = cl.origin-y
 
-    #box(width: width, height: height - 10pt)[
+    #box(width: width, height: height)[
       // Grid
       #draw-grid(origin-x, pad-top, chart-width, chart-height, t)
 
