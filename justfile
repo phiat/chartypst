@@ -24,6 +24,7 @@ test:
 screenshots:
     typst compile --root . examples/demo.typ screenshots/page-{n}.png
     typst compile --root . examples/showcase.typ screenshots/showcase-{n}.png
+    optipng -o2 -quiet screenshots/*.png || echo "optipng not found, skipping optimization"
     @echo "Generated $(ls screenshots/*.png | wc -l) screenshots"
 
 # Compile demo + showcase + tests (full CI check)
