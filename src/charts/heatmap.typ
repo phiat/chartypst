@@ -95,7 +95,8 @@
 
           // Value label — centered in cell
           if show-values {
-            let text-color = if normalized > 0.5 { t.text-color-inverse } else { t.text-color }
+            let is-dark = if reverse { normalized < 0.5 } else { normalized > 0.5 }
+            let text-color = if is-dark { t.text-color-inverse } else { t.text-color }
             place(
               left + top,
               dx: row-label-width + j * cell-size,

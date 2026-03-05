@@ -193,7 +193,7 @@
 
 // Draw axis title labels (x below axis, y rotated on left).
 // y-center is the vertical midpoint of the chart area (used for y-label rotation).
-// x-label is placed at 2 × y-center + 12pt (i.e. below the x-axis).
+// x-label is placed at 2 × y-center + 18pt (i.e. below the x-axis tick labels).
 #let draw-axis-titles(x-label, y-label, x-center, y-center, theme) = {
   if x-label != none {
     place(left + top, dx: x-center, dy: y-center * 2 + 18pt,
