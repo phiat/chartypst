@@ -9,7 +9,7 @@ Pure-Typst charting library — 50+ chart types, 6 theme presets, zero dependenc
 - **Primitives:** `src/primitives/*.typ` — axes, layout, legend, container, annotations, polar, title
 - **Data loaders:** `src/data.typ` — `load-simple`, `load-series`, `load-scatter`, `load-bubble`, `load-hierarchy`
 - **Examples:** `examples/demos/demo-*.typ` (19 per-chart demos), `examples/showcase.typ`, `examples/demo.typ`
-- **Shared demo data:** `examples/demo-data.typ` — 3 themed datasets (sales, codebase, league)
+- **Shared demo data:** `examples/demo-data.typ` — 5 themed datasets (sales, codebase, league, rpg, words) loaded from `data/*.json`
 - **Tests:** `tests/test-all.typ`
 - **Screenshots:** `screenshots/demo/*.png` + `screenshots/showcase/*.png`
 - **Scripts:** `scripts/convert-data.py` — CLI JSON-to-chart-format converter
@@ -84,6 +84,6 @@ So include: `src/`, `typst.toml`, `LICENSE`, `README.md`, `scripts/`
 
 ### Current state
 - Published: 0.1.1
-- Latest: 0.3.0 (tagged, released on GitHub)
-- Typst packages PR: needs new PR for 0.3.0 (old 0.2.0 PR #4266 should be closed)
+- Latest: 0.4.0 (tagged, released on GitHub)
+- Typst packages PR: needs new PR for 0.4.0 (old 0.2.0 PR #4266 should be closed)
 
