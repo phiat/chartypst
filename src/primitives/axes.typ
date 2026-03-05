@@ -34,7 +34,10 @@
 }
 
 // Draw Y-axis (vertical) and X-axis (horizontal) lines.
-#let draw-axis-lines(origin-x, origin-y, x-end, y-start, theme) = {
+// When show-ticks is true, draws small tick marks at each grid position on both axes.
+#let draw-axis-lines(origin-x, origin-y, x-end, y-start, theme, show-ticks: false) = {
+  let chart-width = x-end - origin-x
+  let chart-height = origin-y - y-start
   // Y-axis: vertical from y-start down to origin-y at x=origin-x
   place(left + top,
     line(start: (origin-x, y-start), end: (origin-x, origin-y), stroke: theme.axis-stroke)
@@ -43,6 +46,22 @@
   place(left + top,
     line(start: (origin-x, origin-y), end: (x-end, origin-y), stroke: theme.axis-stroke)
   )
+  // Tick marks
+  if show-ticks {
+    let tick-count = theme.tick-count
+    let tick-len = 4pt
+    for i in array.range(tick-count) {
+      let fraction = if tick-count > 1 { i / (tick-count - 1) } else { 0 }
+      // Y-axis ticks (left side)
+      let y = y-start + chart-height - fraction * chart-height
+      place(left + top,
+        line(start: (origin-x - tick-len, y), end: (origin-x, y), stroke: theme.axis-stroke))
+      // X-axis ticks (bottom)
+      let x = origin-x + fraction * chart-width
+      place(left + top,
+        line(start: (x, origin-y), end: (x, origin-y + tick-len), stroke: theme.axis-stroke))
+    }
+  }
 }
 
 // Draw tick labels along the Y axis.
@@ -132,10 +151,30 @@
 }
 
 // Draw grid lines behind chart area.
-#let draw-grid(x-start, y-start, chart-width, chart-height, theme) = {
+// When show-minor-grid is true, draws lighter lines between major grid lines.
+#let draw-grid(x-start, y-start, chart-width, chart-height, theme, show-minor-grid: false, minor-count: 4) = {
   if theme.show-grid == false { return }
   let tick-count = theme.tick-count
-  // Horizontal grid lines
+
+  // Minor grid lines (drawn first, behind major)
+  if show-minor-grid and tick-count > 1 {
+    let minor-stroke = theme.at("minor-grid-stroke", default: 0.25pt + luma(240))
+    for i in array.range(tick-count - 1) {
+      for j in array.range(1, minor-count) {
+        let fraction = (i + j / minor-count) / (tick-count - 1)
+        // Horizontal minor
+        let y = y-start + chart-height - fraction * chart-height
+        place(left + top,
+          line(start: (x-start, y), end: (x-start + chart-width, y), stroke: minor-stroke))
+        // Vertical minor
+        let x = x-start + fraction * chart-width
+        place(left + top,
+          line(start: (x, y-start), end: (x, y-start + chart-height), stroke: minor-stroke))
+      }
+    }
+  }
+
+  // Major grid lines
   for i in array.range(tick-count) {
     let fraction = if tick-count > 1 { i / (tick-count - 1) } else { 0 }
     let y = y-start + chart-height - fraction * chart-height
@@ -143,7 +182,6 @@
       line(start: (x-start, y), end: (x-start + chart-width, y), stroke: theme.grid-stroke)
     )
   }
-  // Vertical grid lines
   for i in array.range(tick-count) {
     let fraction = if tick-count > 1 { i / (tick-count - 1) } else { 0 }
     let x = x-start + fraction * chart-width
@@ -155,10 +193,10 @@
 
 // Draw axis title labels (x below axis, y rotated on left).
 // y-center is the vertical midpoint of the chart area (used for y-label rotation).
-// x-label is placed at 2 × y-center + 12pt (i.e. below the x-axis).
+// x-label is placed at 2 × y-center + 18pt (i.e. below the x-axis tick labels).
 #let draw-axis-titles(x-label, y-label, x-center, y-center, theme) = {
   if x-label != none {
-    place(left + top, dx: x-center, dy: y-center * 2 + 12pt,
+    place(left + top, dx: x-center, dy: y-center * 2 + 18pt,
       align(center, text(size: theme.axis-title-size, fill: theme.text-color)[#x-label])
     )
   }

@@ -9,11 +9,23 @@ Pure-Typst charting library — 50+ chart types, 6 theme presets, zero dependenc
 - **Primitives:** `src/primitives/*.typ` — axes, layout, legend, container, annotations, polar, title
 - **Data loaders:** `src/data.typ` — `load-simple`, `load-series`, `load-scatter`, `load-bubble`, `load-hierarchy`
 - **Examples:** `examples/demos/demo-*.typ` (19 per-chart demos), `examples/showcase.typ`, `examples/demo.typ`
-- **Shared demo data:** `examples/demo-data.typ` — 3 themed datasets (sales, codebase, league)
+- **Shared demo data:** `examples/demo-data.typ` — 5 themed datasets (sales, codebase, league, rpg, words) loaded from `data/*.json`
 - **Tests:** `tests/test-all.typ`
 - **Screenshots:** `screenshots/demo/*.png` + `screenshots/showcase/*.png`
 - **Scripts:** `scripts/convert-data.py` — CLI JSON-to-chart-format converter
 - **Dev commands:** `just build` (compile all + screenshots), `just push` (build + push), `just check`, `just demos`, `just showcase`, `just test`, `just convert`
+
+## Visual Verification Rule
+
+**After ANY change to chart code or primitives**, you MUST:
+1. Run `just showcase` to compile
+2. Render screenshots: `typst compile --root . examples/showcase.typ "screenshots/showcase/showcase-{0p}.png"`
+3. Visually inspect each page for layout breakage — overlapping labels, legends clipping into adjacent cells, axis titles overlapping data
+4. The showcase uses a tight 2-col × 4-row grid on A4 with small charts (250×95pt). Changes that look fine on large standalone charts can break the compact showcase layout. Always check both.
+
+## Pull Request Hygiene
+
+When adding commits to an open PR, **always update the PR title and body** to reflect the full scope of changes. Use `gh pr edit` to keep the description current. The PR body should be the authoritative summary of what's in the branch.
 
 ## Issue Tracking
 
@@ -84,6 +96,6 @@ So include: `src/`, `typst.toml`, `LICENSE`, `README.md`, `scripts/`
 
 ### Current state
 - Published: 0.1.1
-- Latest: 0.3.0 (tagged, released on GitHub)
-- Typst packages PR: needs new PR for 0.3.0 (old 0.2.0 PR #4266 should be closed)
+- Latest: 0.4.0 (tagged, released on GitHub)
+- Typst packages PR: needs new PR for 0.4.0 (old 0.2.0 PR #4266 should be closed)
 

@@ -34,3 +34,5 @@
 #include "test-misc.typ"
 #pagebreak()
 #include "test-options.typ"
+#pagebreak()
+#include "test-color.typ"
