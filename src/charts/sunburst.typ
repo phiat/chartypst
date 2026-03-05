@@ -153,7 +153,8 @@
             let lx = cx + mid-r * calc.cos(mid-angle * 1deg)
             let ly = cy + mid-r * calc.sin(mid-angle * 1deg)
             let label-color = if seg.depth <= 2 { t.text-color-inverse } else { t.text-color }
-            let label-w = calc.max(arc-w, 20pt)
+            // Size pill to text, not arc
+            let label-w = fit.size * 0.6 * lbl-len + 6pt
             let pill-h = fit.size * 1.4
             // Semi-transparent background pill for readability
             let pill-fill = if seg.depth <= 2 {

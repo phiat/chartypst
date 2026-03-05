@@ -82,6 +82,10 @@ dev:
     sleep 1
     xdg-open examples/demo.pdf 2>/dev/null || open examples/demo.pdf
 
+# Convert JSON data to chart-ready format (e.g., just convert data.json simple --pretty)
+convert *args:
+    python3 scripts/convert-data.py {{args}}
+
 # Clean generated artifacts
 clean:
     rm -f examples/*.pdf examples/demos/*.pdf tests/*.pdf
