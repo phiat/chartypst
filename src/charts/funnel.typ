@@ -103,12 +103,14 @@
           let label-size = if avg-half * 2 < 60pt { calc.max(5pt, t.value-label-size - 1pt) } else { t.value-label-size }
 
           let lbl-len = label-text.len()
-          let avail-w = inset-half * 2
+          // Use actual narrowest width of trapezoid (bottom edge), not inflated inset
+          let min-half = calc.min(top-half, bottom-half)
+          let avail-w = calc.max(0pt, min-half * 2 - 12pt)  // 6pt padding each side
           let avail-h = seg-height
 
-          // Check if label fits inside segment (try shrinking font first)
+          // Check if label fits inside segment (try shrinking, but not below 6pt — unreadable)
           let has-detail = n <= 9 and detail != ""
-          let fit = try-fit-label(avail-w, avail-h, label-size, lbl-len)
+          let fit = try-fit-label(avail-w, avail-h, label-size, lbl-len, shrink-min: 6pt)
 
           if fit.fits {
             let label-size = fit.size
@@ -124,7 +126,7 @@
               left + top,
               dx: center-x - inset-half,
               dy: start-y,
-              box(width: avail-w, height: block-h, clip: true)[
+              box(width: inset-half * 2, height: block-h, clip: true)[
                 #align(center + horizon)[
                   #if show-detail {
                     stack(dir: ttb, spacing: 1pt,
