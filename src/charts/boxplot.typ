@@ -74,7 +74,7 @@
 
       // X-axis category labels
       #let spacing = chart-width / n
-      #draw-x-category-labels(labels, origin-x, spacing, origin-y + 4pt, t, center-offset: spacing / 2 - 10pt)
+      #draw-x-category-labels(labels, origin-x, spacing, origin-y + 4pt, t)
 
       // Axis titles
       #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, origin-y / 2, t)

@@ -27,9 +27,10 @@
   width: 400pt,
   height: auto,
   title: none,
-  bar-height: 18pt,
+  bar-height: 14pt,
   gap: 4pt,
   show-grid: true,
+  x-label: none,
   show-legend: false,
   today: none,
   theme: none,
@@ -63,7 +64,7 @@
   let has-groups = group-names.len() > 0
 
   // Label area width for task names — scale with chart width
-  let label-area = calc.min(100pt, width * 0.35)
+  let label-area = calc.min(80pt, width * 0.25)
   let timeline-width = width - label-area - 10pt
   let col-width = timeline-width / time-count
 
@@ -146,12 +147,12 @@
           i
         }
 
-        // Task name label
+        // Task name label — right-aligned into label area
         place(
           left + top,
-          dx: 4pt,
+          dx: 0pt,
           dy: y-pos + 1pt,
-          text(size: t.axis-label-size, fill: t.text-color)[#task.name],
+          box(width: label-area - 6pt, align(right, text(size: t.axis-label-size, fill: t.text-color)[#task.name])),
         )
 
         // Task bar
@@ -167,6 +168,12 @@
             radius: 2pt,
           ),
         )
+      }
+
+      // X-axis label
+      #if x-label != none {
+        place(left + top, dx: label-area + timeline-width / 2, dy: body-height,
+          move(dx: -3em, box(width: 6em, align(center, text(size: t.axis-title-size, fill: t.text-color)[#x-label]))))
       }
 
       // "Today" marker line

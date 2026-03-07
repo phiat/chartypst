@@ -77,7 +77,10 @@
   }
 
   // ── Layout geometry ───────────────────────────────────────────────────
-  let pad-x = 40pt   // horizontal padding for labels
+  let label-size = calc.min(8pt, calc.max(5pt, height / 25))
+  // Scale pad-x with chart width — enough room for labels
+  let max-label-len = nodes.fold(0, (acc, lbl) => calc.max(acc, str(lbl).len()))
+  let pad-x = calc.max(30pt, calc.min(60pt, label-size * 0.6 * max-label-len + 8pt))
   let pad-y = 10pt    // vertical padding top/bottom
   let chart-w = width - 2 * pad-x
   let chart-h = height - 2 * pad-y
@@ -91,7 +94,7 @@
 
   // Compute vertical positions for each node within its layer.
   // Nodes are stacked with small gaps, sized proportional to their value.
-  let node-gap = 8pt
+  let node-gap = calc.max(4pt, chart-h * 0.03)
   let node-x = array.range(n).map(_ => 0pt)
   let node-y = array.range(n).map(_ => 0pt)
   let node-h = array.range(n).map(_ => 0pt)
@@ -127,7 +130,7 @@
   let sorted-flows = flows.sorted(key: f => layer.at(f.from) * 1000 + layer.at(f.to))
 
   // ── Render ────────────────────────────────────────────────────────────
-  chart-container(width, height, title, t)[
+  align(center, chart-container(width, height, title, t)[
     #box(width: width, height: height)[
       // Draw flows first (behind nodes)
       #for f in sorted-flows {
@@ -190,37 +193,53 @@
         )
       }
 
-      // Draw labels
+      // Draw labels — deconflict per layer to prevent overlap
       #if show-labels {
-        for i in array.range(n) {
-          let lbl = nodes.at(i)
-          let val-text = if show-values {
-            let v = node-value.at(i)
-            " (" + str(v) + ")"
-          } else { "" }
-
-          // Place label to the right for left/middle columns, left for rightmost
-          if layer.at(i) == max-layer {
-            // Right-side: label to the left of the node
-            place(left + top,
-              dx: 0pt,
-              dy: node-y.at(i) + node-h.at(i) / 2,
-              box(width: node-x.at(i) - 4pt, height: 0pt,
-                align(right, move(dy: -0.5em,
-                  text(size: 8pt, fill: t.text-color, str(lbl) + val-text)))),
-            )
-          } else {
-            // Left/middle: label to the right of the node
-            place(left + top,
-              dx: node-x.at(i) + node-width + 4pt,
-              dy: node-y.at(i) + node-h.at(i) / 2,
-              move(dy: -0.5em,
-                text(size: 8pt, fill: t.text-color, str(lbl) + val-text)),
-            )
+        let label-h = label-size * 1.4  // estimated label height
+        let label-gap = 1pt
+        for li in array.range(num-layers) {
+          let col-nodes = layers.at(li)
+          // Build label entries sorted by y
+          let entries = col-nodes.map(i => {
+            let lbl = nodes.at(i)
+            let val-text = if show-values { " (" + str(node-value.at(i)) + ")" } else { "" }
+            (idx: i, y: node-y.at(i) + node-h.at(i) / 2 - label-h / 2, text: str(lbl) + val-text)
+          }).sorted(key: e => e.y)
+          // Nudge overlapping labels down (rebuild array for immutability)
+          let deconflicted = ()
+          let prev-bottom = -100pt
+          for e in entries {
+            let y = if e.y < prev-bottom { prev-bottom } else { e.y }
+            let y = calc.max(pad-y, calc.min(height - pad-y - label-h, y))
+            deconflicted.push((..e, y: y))
+            prev-bottom = y + label-h + label-gap
+          }
+          // Render — rightmost: label left, all others: label right
+          for e in deconflicted {
+            let i = e.idx
+            if layer.at(i) == max-layer and num-layers > 1 {
+              // Rightmost: label to the right of the node (into right padding)
+              place(left + top,
+                dx: node-x.at(i) + node-width + 4pt,
+                dy: e.y,
+                box(height: label-h,
+                  align(left + horizon,
+                    text(size: label-size, fill: t.text-color, e.text))),
+              )
+            } else {
+              // Left/middle: label to the left of the node
+              place(left + top,
+                dx: 0pt,
+                dy: e.y,
+                box(width: node-x.at(i) - 4pt, height: label-h,
+                  align(right + horizon,
+                    text(size: label-size, fill: t.text-color, e.text))),
+              )
+            }
           }
         }
       }
     ]
-  ]
+  ])
   })
 }

@@ -33,7 +33,7 @@
     )
   ],
   progress-bars(sales.targets,
-    width: W, title: "progress-bars", theme: lt,
+    width: W, title: "progress-bars", max-val: 100, theme: lt,
   ),
 ))
 

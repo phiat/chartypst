@@ -133,7 +133,7 @@
   let chart-height = radius + dot-r
   let legend-height = if show-legend { calc.ceil(n-parties / 3) * 16pt + 10pt } else { 0pt }
 
-  chart-container(size, chart-height + legend-height, title, t, extra-height: 40pt)[
+  align(center, chart-container(size, chart-height + legend-height, title, t, extra-height: 40pt)[
     // Hemicycle
     #box(width: size, height: chart-height)[
       #for (i, pos) in dots.enumerate() {
@@ -164,6 +164,6 @@
         }
       ]
     }
-  ]
+  ])
   })
 }

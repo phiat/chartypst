@@ -25,7 +25,7 @@
   show-legend: true,
   show-percentages: true,
   donut: false,
-  donut-ratio: 0.5,
+  donut-ratio: 0.4,
   theme: none,
 ) = context {
   layout(avail => {
@@ -72,7 +72,7 @@
   let legend-height = if show-legend { n * (swatch-size + 4pt) + 10pt } else { 0pt }
   let extra-height = calc.max(40pt, legend-height - size + 40pt)
 
-  chart-container(total-width, size, title, t, extra-height: extra-height)[
+  align(center, chart-container(total-width, size, title, t, extra-height: extra-height)[
     // Use a grid layout to keep pie and legend separate
     #grid(
       columns: if show-legend { (size, legend-width) } else { (size,) },
@@ -131,15 +131,15 @@
         }
       ],
 
-      // Legend (if shown)
+      // Legend (if shown) — vertically centered relative to pie
       if show-legend {
         let legend-entries = labels.enumerate().map(((i, lbl)) => {
           let pct = calc.round((values.at(i) / total) * 100, digits: 1)
           str(lbl) + " (" + str(pct) + "%)"
         })
-        draw-legend-vertical(legend-entries, t, width: legend-width)
+        align(horizon, draw-legend-vertical(legend-entries, t, width: legend-width))
       }
     )
-  ]
+  ])
   })
 }

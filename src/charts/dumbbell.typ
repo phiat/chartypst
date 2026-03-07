@@ -167,15 +167,19 @@
 
         // Optional value labels — clamp so they don't overlap y-axis labels
         if show-values {
-          // Value near start dot
-          let s-dx = if sv <= ev { calc.max(plot-left, x-start - 20pt) } else { x-start + dot-size + 3pt }
+          // Value near start dot — if the label would overlap the y-axis area, place it to the right
+          let s-dx = if sv <= ev {
+            if x-start - 20pt < plot-left { x-start + dot-size + 3pt } else { x-start - 20pt }
+          } else { x-start + dot-size + 3pt }
           place(left + top,
             dx: s-dx,
             dy: y,
             move(dy: -0.5em, text(size: t.value-label-size, fill: start-color)[#sv])
           )
           // Value near end dot
-          let e-dx = if ev >= sv { x-end + dot-size + 3pt } else { calc.max(plot-left, x-end - 20pt) }
+          let e-dx = if ev >= sv { x-end + dot-size + 3pt } else {
+            if x-end - 20pt < plot-left { x-end + dot-size + 3pt } else { x-end - 20pt }
+          }
           place(left + top,
             dx: e-dx,
             dy: y,

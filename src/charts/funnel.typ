@@ -51,6 +51,7 @@
   chart-container(width, height, title, t, extra-height: 20pt)[
     #box(width: width, height: usable-height + 10pt)[
       #v(5pt)
+      #let last-ext-bottom = -100pt
       #for (i, val) in values.enumerate() {
         // Top edge width proportional to this segment's value
         let top-width = (val / max-val) * usable-width
@@ -150,12 +151,13 @@
             let ext-label-x = leader-start-x + 10pt
             let ext-label-w = width - ext-label-x - 4pt
             if ext-label-w > 20pt {
-              let block-h = ext-label-size + 2pt
-              let label-y = mid-y - block-h / 2
+              let block-h = ext-label-size + 4pt
+              let label-y = calc.max(mid-y - block-h / 2, last-ext-bottom + 1pt)
+              last-ext-bottom = label-y + block-h
               // Leader line
               place(left + top,
                 line(start: (leader-start-x, mid-y),
-                     end: (ext-label-x - 1pt, mid-y),
+                     end: (ext-label-x - 1pt, label-y + block-h / 2),
                      stroke: 0.5pt + t.text-color-light))
               // Label
               place(

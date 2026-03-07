@@ -2,7 +2,7 @@
 #import "../theme.typ": _resolve-ctx, get-color
 #import "../util.typ": lerp-color, heat-color, nonzero, day-of-week
 #import "../validate.typ": validate-heatmap-data, validate-calendar-data, validate-correlation-data
-#import "../primitives/container.typ": chart-container
+#import "../primitives/container.typ": chart-container, container-inset
 #import "../primitives/layout.typ": density-skip
 #import "../primitives/legend.typ": draw-gradient-legend
 
@@ -27,6 +27,7 @@
   reverse: false,
   theme: none,
 ) = context {
+  layout(avail => {
   validate-heatmap-data(data, "heatmap")
   let t = _resolve-ctx(theme)
   let rows = data.rows
@@ -43,8 +44,15 @@
   let val-range = nonzero(max-val - min-val)
 
   let row-label-width = calc.max(30pt, n-cols * cell-size * 0.2 + 20pt)
-  let col-label-height = calc.max(30pt, cell-size * 1.8)
+  let col-label-height = calc.max(35pt, cell-size * 2.5)
   let legend-width = if show-legend { 60pt } else { 0pt }
+
+  // Shrink cell-size if total width exceeds available space
+  let overhead = row-label-width + legend-width + 20pt + 2 * container-inset
+  let avail-w = if type(avail.width) == length and avail.width > 0pt { avail.width } else { none }
+  let cell-size = if avail-w != none and n-cols * cell-size + overhead > avail-w {
+    (avail-w - overhead) / n-cols
+  } else { cell-size }
 
   let grid-width = n-cols * cell-size
   let grid-height = n-rows * cell-size
@@ -119,6 +127,7 @@
       }
     ]
   ]
+  })
 }
 
 /// Renders a calendar-style heatmap grid (similar to a GitHub contribution graph).
@@ -168,25 +177,31 @@
   let empty-fill = if t.background != none { t.background.lighten(15%) } else { luma(235) }
   let empty-stroke = if t.background != none { 0.5pt + t.text-color-light } else { 0.5pt + luma(210) }
 
-  chart-container(day-label-width + n-weeks * cell-size + 20pt, month-label-height + 7 * cell-size, title, t, extra-height: 40pt)[
+  align(center, chart-container(day-label-width + n-weeks * cell-size + 20pt, month-label-height + 7 * cell-size, title, t, extra-height: 40pt)[
     #box[
-      // Month labels along the top (x-axis)
+      // Month labels along the top (x-axis) — skip labels that would overlap
       #if show-month-labels {
         let month-names = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
         let prev-month = ""
+        let last-label-x = -100pt  // track last placed label x to prevent overlap
+        let min-label-gap = 20pt   // minimum horizontal gap between month labels
         for (i, dt) in dates.enumerate() {
           let parts = dt.split("-")
           let month-str = if parts.len() >= 2 { parts.at(1) } else { "" }
           if month-str != prev-month and month-str != "" {
-            // Position based on actual grid column (accounting for start offset)
             let grid-idx = start-dow + i
             let week = calc.floor(grid-idx / 7)
+            let label-x = day-label-width + week * cell-size
             let month-idx = int(month-str) - 1
             let label = if month-idx >= 0 and month-idx < 12 { month-names.at(month-idx) } else { month-str }
-            place(left + top,
-              dx: day-label-width + week * cell-size,
-              dy: 0pt,
-              text(size: 6pt, fill: t.text-color)[#label])
+            // Only place if far enough from previous label
+            if label-x - last-label-x >= min-label-gap {
+              place(left + top,
+                dx: label-x,
+                dy: 0pt,
+                text(size: 6pt, fill: t.text-color)[#label])
+              last-label-x = label-x
+            }
             prev-month = month-str
           }
         }
@@ -281,7 +296,7 @@
       }
       #place(left + top, dx: day-label-width + 25pt + 5 * (cell-size + 2pt) + 5pt, dy: legend-y, text(size: 6pt, fill: t.text-color)[More])
     ]
-  ]
+  ])
 }
 
 /// Renders a correlation matrix as a symmetric heatmap (blue to red for -1 to +1).
@@ -299,6 +314,7 @@
   show-values: true,
   theme: none,
 ) = context {
+  layout(avail => {
   validate-correlation-data(data, "correlation-matrix")
   let t = _resolve-ctx(theme)
   let labels = data.labels
@@ -306,6 +322,13 @@
   let n = labels.len()
 
   let label-area = 50pt
+
+  // Shrink cell-size if total width exceeds available space
+  let overhead = label-area + 20pt + 2 * container-inset
+  let avail-w = if type(avail.width) == length and avail.width > 0pt { avail.width } else { none }
+  let cell-size = if avail-w != none and n * cell-size + overhead > avail-w {
+    (avail-w - overhead) / n
+  } else { cell-size }
 
   // Correlation color: blue (-1) -> white (0) -> red (+1)
   let corr-color(val) = {
@@ -375,4 +398,5 @@
       }
     ]
   ]
+  })
 }

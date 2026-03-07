@@ -192,6 +192,8 @@
           )
         }
       }
+
+      #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, origin-y / 2, t)
     ]
 
     // Legend

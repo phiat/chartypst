@@ -56,7 +56,7 @@
   let box-size = size + label-pad * 2
   let total-width = box-size
 
-  chart-container(total-width, box-size, title, t, extra-height: 20pt)[
+  align(center, chart-container(total-width, box-size, title, t, extra-height: 20pt)[
     #box(width: box-size, height: box-size)[
       // Center of chart — offset by label padding
       #let cx = box-size / 2
@@ -110,6 +110,6 @@
         }
       }
     ]
-  ]
+  ])
   })
 }

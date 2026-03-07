@@ -31,6 +31,7 @@
   title: none,
   show-values: true,
   bar-height: auto,
+  x-label: none,
   theme: none,
 ) = context {
   layout(size => {
@@ -166,6 +167,11 @@
               align(center + top, text(size: t.axis-label-size, fill: t.text-color)[#tick-val]))
           )
         }
+      }
+      // X-axis title
+      #if x-label != none {
+        place(left + top, dx: center-x, dy: chart-height + tick-area - 2pt,
+          move(dx: -3em, box(width: 6em, align(center, text(size: t.axis-title-size, fill: t.text-color)[#x-label]))))
       }
     ]
 

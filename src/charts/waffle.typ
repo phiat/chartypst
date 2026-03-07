@@ -101,7 +101,7 @@
   let wt = (..t, legend-position: "right")
   let legend-content = draw-legend-auto(legend-entries, wt, show-legend: show-legend)
 
-  chart-container(size, grid-height, title, wt, legend: legend-content)[
+  align(center, chart-container(size, grid-height, title, wt, legend: legend-content)[
     // Draw grid bottom-to-top, left-to-right
     #box(width: size, height: grid-height)[
       #align(center + top)[
@@ -133,6 +133,6 @@
       ]
     ]
 
-  ]
+  ])
   })
 }

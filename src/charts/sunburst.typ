@@ -105,7 +105,7 @@
   // Collect all arc segments
   let segments = _collect-segments(data, 0, 360, 0, 0)
 
-  chart-container(chart-size, chart-size, title, t, extra-height: 40pt)[
+  align(center, chart-container(chart-size, chart-size, title, t, extra-height: 40pt)[
     #box(width: chart-size, height: chart-size)[
       #let cx = radius
       #let cy = radius
@@ -156,7 +156,7 @@
             let ly = cy + mid-r * calc.sin(mid-angle * 1deg)
             let label-color = if seg.depth <= 2 { t.text-color-inverse } else { t.text-color }
             // Size pill to text, not arc
-            let label-w = fit.size * 0.6 * lbl-len + 6pt
+            let label-w = fit.size * 0.5 * lbl-len + 4pt
             let pill-h = fit.size * 1.4
             // Semi-transparent background pill for readability
             let pill-fill = if seg.depth <= 2 {
@@ -181,6 +181,6 @@
         }
       }
     ]
-  ]
+  ])
   })
 }

@@ -26,6 +26,21 @@
   // Total width needed for labels column
   let label-col-width = if show-labels { 90pt } else { 0pt }
 
+  // Margin to prevent ring strokes from clipping at the container edge
+  let margin = ring-width / 2 + 2pt
+
+  // Shrink if total width exceeds available space
+  let container-inset = 16pt
+  let avail-w = if type(avail.width) == length and avail.width > 0pt { avail.width } else { none }
+  let total-w = size + margin * 2 + label-col-width
+  if avail-w != none and total-w + container-inset > avail-w {
+    size = avail-w - container-inset - margin * 2 - label-col-width
+    if size < 80pt {
+      size = (avail-w - container-inset - margin * 2) * 0.6
+      label-col-width = (avail-w - container-inset - margin * 2) - size
+    }
+  }
+
   // Pre-compute ring colours (one per entry from the palette)
   let colors = array.range(n).map(i => get-color(t, i))
 
@@ -37,14 +52,14 @@
   // Number of line-segment samples per full circle
   let samples-per-circle = 72
 
-  chart-container(size + label-col-width, size, title, t)[
-    #box(width: size + label-col-width, height: size)[
+  align(center, chart-container(size + margin * 2 + label-col-width, size + margin * 2, title, t)[
+    #box(width: size + margin * 2 + label-col-width, height: size + margin * 2)[
       // ── Draw rings ───────────────────────────────────────────────
       #for (i, entry) in entries.enumerate() {
         let radius = size / 2 - ring-width / 2 - i * (ring-width + gap)
         if radius < ring-width / 2 { /* skip if too small */ } else {
-          let cx = size / 2
-          let cy = size / 2
+          let cx = size / 2 + margin
+          let cy = size / 2 + margin
           let ring-color = colors.at(i)
           let bg-color = dim(ring-color)
 
@@ -114,8 +129,8 @@
       #if show-labels {
         for (i, entry) in entries.enumerate() {
           let ring-color = colors.at(i)
-          let label-x = size + 8pt
-          let label-y = size / 2 - (n / 2 - i) * 22pt
+          let label-x = size + margin * 2 + 8pt
+          let label-y = size / 2 + margin - (n / 2 - i) * 22pt
 
           // Colour swatch
           place(
@@ -148,6 +163,6 @@
         }
       }
     ]
-  ]
+  ])
   })
 }

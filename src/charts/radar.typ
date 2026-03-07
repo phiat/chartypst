@@ -32,9 +32,6 @@
   let labels = data.labels
   let series = data.series
   let n = labels.len()
-  let radius = size / 2 - calc.max(18pt, size * 0.22)  // Scale padding with size — more room for labels
-  let cx = size / 2
-  let cy = size / 2
 
   // Find max value across all series
   let all-values = series.map(s => s.values).flatten()
@@ -43,10 +40,30 @@
   // Respect both show-legend param and theme legend-position
   let show-legend = show-legend and t.legend-position != "none"
 
-  // Calculate legend width — scale with chart size to avoid oversized legends on compact charts
-  let legend-width = if show-legend and series.len() > 1 { calc.min(100pt, size * 0.6) } else { 0pt }
+  // Calculate legend width — compact to leave room for the chart
+  let legend-width = if show-legend and series.len() > 1 { calc.min(80pt, size * 0.4) } else { 0pt }
 
-  chart-container(size + legend-width, size, title, t, extra-height: 40pt)[
+  // Shrink legend then chart if total width exceeds available space
+  let container-inset = 16pt
+  let avail-w = if type(avail.width) == length and avail.width > 0pt { avail.width } else { none }
+  let total-width = size + legend-width
+  if avail-w != none and total-width + container-inset > avail-w {
+    let budget = avail-w - container-inset
+    // First try shrinking legend to minimum 60pt
+    legend-width = calc.max(60pt, budget - size)
+    if size + legend-width > budget {
+      // Still too wide — shrink chart proportionally
+      size = budget - legend-width
+    }
+    total-width = size + legend-width
+  }
+
+  // Recompute radius after potential resize
+  let radius = size / 2 - calc.max(18pt, size * 0.28)
+  let cx = size / 2
+  let cy = size / 2
+
+  align(center, chart-container(total-width, size, title, t, extra-height: 40pt)[
     #grid(
       columns: if legend-width > 0pt { (size, legend-width) } else { (size,) },
 
@@ -162,11 +179,11 @@
         }
       ],
 
-      // Legend
+      // Legend — vertically centered with the chart
       if legend-width > 0pt {
-        draw-legend-vertical(series.map(s => s.name), t, width: legend-width)
+        align(horizon, draw-legend-vertical(series.map(s => s.name), t, width: legend-width))
       }
     )
-  ]
+  ])
   })
 }

@@ -197,7 +197,7 @@
 #let draw-axis-titles(x-label, y-label, x-center, y-center, theme) = {
   if x-label != none {
     place(left + top, dx: x-center, dy: y-center * 2 + 18pt,
-      align(center, text(size: theme.axis-title-size, fill: theme.text-color)[#x-label])
+      move(dx: -3em, box(width: 6em, align(center, text(size: theme.axis-title-size, fill: theme.text-color)[#x-label])))
     )
   }
   if y-label != none {

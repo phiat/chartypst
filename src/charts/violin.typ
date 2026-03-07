@@ -169,14 +169,14 @@
       #draw-grid(origin-x, y-start, chart-width, chart-height, t)
 
       // Axes
-      #draw-axis-lines(origin-x, origin-y, origin-x + chart-width, y-start, t)
+      #draw-axis-lines(origin-x, origin-y, origin-x + chart-width, y-start, t, show-ticks: true)
 
       // Y-axis ticks
       #draw-y-ticks(y-min, y-max, chart-height, y-start, origin-x, t, digits: 1)
 
       // X-axis category labels
       #let spacing = chart-width / n
-      #draw-x-category-labels(labels, origin-x, spacing, origin-y + 4pt, t)
+      #draw-x-category-labels(labels, origin-x, spacing, origin-y + 12pt, t)
 
       // Axis titles
       #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, origin-y / 2, t)
