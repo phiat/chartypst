@@ -121,13 +121,18 @@
 
           if n > 1 {
             let last-pt = points.at(n - 1)
-            place(
-              left + top,
-              dx: last-pt.at(0) + dot-size / 2 + 3pt,
-              dy: last-pt.at(1),
-              move(dy: -0.5em,
-                text(size: t.axis-label-size, fill: color, weight: "bold")[#s.name])
-            )
+            let label-x = last-pt.at(0) + dot-size / 2 + 3pt
+            let label-w = width - label-x
+            if label-w > 10pt {
+              place(
+                left + top,
+                dx: label-x,
+                dy: last-pt.at(1),
+                box(width: label-w, height: 0pt,
+                  move(dy: -0.5em,
+                    text(size: t.axis-label-size, fill: color, weight: "bold")[#s.name]))
+              )
+            }
           }
         }
       }

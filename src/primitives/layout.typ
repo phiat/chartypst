@@ -10,10 +10,16 @@
 /// -> dictionary with `width` and `height` keys
 #let resolve-size(width, height, size) = {
   let resolve(val, avail) = {
-    if type(val) == length { val }
-    else if type(val) == ratio { avail * (val / 100%) }
-    else if type(val) == relative { val.length + avail * (val.ratio / 100%) }
-    else { val }
+    let resolved = if type(val) == length { val }
+      else if type(val) == ratio { avail * (val / 100%) }
+      else if type(val) == relative { val.length + avail * (val.ratio / 100%) }
+      else { val }
+    // Clamp to available space so charts don't overflow containers
+    if type(resolved) == length and type(avail) == length and avail > 0pt {
+      calc.min(resolved, avail)
+    } else {
+      resolved
+    }
   }
   (width: resolve(width, size.width), height: resolve(height, size.height))
 }
