@@ -1,5 +1,5 @@
-// dashboard.typ - Dashboard layout primitives (card, compact-table)
-#import "../theme.typ": _resolve-ctx
+// dashboard.typ - Dashboard layout primitives (card, compact-table, alert, badge, separator)
+#import "../theme.typ": _resolve-ctx, get-color
 
 /// Renders a themed card container with optional title and description.
 ///
@@ -68,4 +68,97 @@
       )
     }),
   )
+}
+
+/// Renders a themed alert block with left border accent, icon, and optional title.
+///
+/// - body (content): Alert body content
+/// - variant (str): One of `"info"`, `"warning"`, `"error"`, `"success"`
+/// - title (none, content, str): Optional alert title
+/// - theme (none, dictionary): Theme overrides
+/// -> content
+#let alert(body, variant: "info", title: none, theme: none) = context {
+  let t = _resolve-ctx(theme)
+  let has-dark-bg = t.background != none
+  let pal = t.palette
+
+  // Map variants to palette indices and icons
+  let variants = (
+    info:    (idx: 0, icon: "ℹ"),
+    warning: (idx: 2, icon: "⚠"),
+    error:   (idx: 2, icon: "✕"),
+    success: (idx: 0, icon: "✓"),
+  )
+  // info/success use palette[0], warning/error use palette[2] (or fallback)
+  let vr = variants.at(variant, default: variants.info)
+  let accent = pal.at(vr.idx, default: pal.at(0))
+  // Adjust accent for specific variants to differentiate
+  let accent = if variant == "success" and pal.len() > 3 { pal.at(3) }
+    else if variant == "warning" and pal.len() > 0 { pal.at(0) }
+    else if variant == "error" and pal.len() > 2 { pal.at(2) }
+    else { accent }
+
+  let bg = if has-dark-bg { accent.darken(80%) } else { accent.lighten(90%) }
+
+  box(
+    width: 100%,
+    fill: bg,
+    stroke: (left: 2.5pt + accent),
+    inset: (x: 8pt, y: 6pt),
+  )[
+    #if title != none {
+      text(size: t.axis-title-size, weight: "bold", fill: accent)[#vr.icon #h(3pt) #title]
+      v(2pt)
+    }
+    #text(size: t.value-label-size, fill: t.text-color, body)
+  ]
+}
+
+/// Renders an inline colored pill badge.
+///
+/// - label (str, content): Badge text
+/// - variant (str): One of `"default"`, `"secondary"`, `"destructive"`, `"outline"`, `"success"`
+/// - theme (none, dictionary): Theme overrides
+/// -> content
+#let badge(label, variant: "default", theme: none) = context {
+  let t = _resolve-ctx(theme)
+  let pal = t.palette
+  let primary = pal.at(0, default: blue)
+  let secondary = pal.at(1, default: gray)
+  let destructive = pal.at(2, default: red)
+  let success = if pal.len() > 3 { pal.at(3) } else { primary }
+  let fill-bg = if t.background != none { t.background } else { white }
+
+  let styles = (
+    default: (bg: primary, fg: t.text-color-inverse),
+    secondary: (bg: secondary, fg: t.text-color-inverse),
+    destructive: (bg: destructive, fg: t.text-color-inverse),
+    outline: (bg: fill-bg, fg: t.text-color),
+    success: (bg: success, fg: t.text-color-inverse),
+  )
+  let s = styles.at(variant, default: styles.default)
+  box(
+    fill: s.bg,
+    stroke: if variant == "outline" { 0.5pt + if t.border != none { t.border } else { luma(220) } } else { none },
+    inset: (x: 4pt, y: 1.5pt),
+    radius: 2pt,
+    text(size: 5pt, weight: "bold", fill: s.fg, upper(label)),
+  )
+}
+
+/// Renders a themed horizontal rule separator.
+///
+/// - thickness (length): Line thickness
+/// - theme (none, dictionary): Theme overrides
+/// -> content
+#let separator(thickness: 0.75pt, theme: none) = context {
+  let t = _resolve-ctx(theme)
+  let color = if t.border != none {
+    // Extract color from stroke if it's a stroke value
+    let b = t.border
+    if type(b) == stroke { b.paint } else { luma(220) }
+  } else { luma(220) }
+  v(4pt)
+  line(length: 100%, stroke: thickness + color)
+  v(4pt)
 }

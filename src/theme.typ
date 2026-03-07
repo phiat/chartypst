@@ -44,6 +44,7 @@
 )
 
 /// Merges a user's partial theme dictionary onto the default theme.
+/// Custom keys not in default-theme are preserved (passthrough).
 /// An optional `overrides` dictionary is applied after the user theme,
 /// useful for per-chart parameter overrides (e.g., `show-grid: true`).
 ///
@@ -59,6 +60,12 @@
       result.insert(key, val)
     }
   }
+  // Passthrough: preserve custom keys not in default-theme
+  if user-theme != none {
+    for (key, val) in user-theme {
+      if key not in result { result.insert(key, val) }
+    }
+  }
   if overrides != none {
     for (key, val) in overrides {
       result.insert(key, val)
@@ -68,23 +75,31 @@
 }
 
 /// Context-aware theme resolver — reads from state when user-theme is none.
+/// When user-theme is provided, it merges onto the global state (set via
+/// `with-theme`) rather than replacing it, so partial overrides like
+/// `theme: (show-grid: true)` inside a `with-theme` block work correctly.
+/// Custom keys not in default-theme are preserved (passthrough).
 /// Must be called inside a `context` block.
 ///
-/// - user-theme (none, dictionary): Explicit theme overrides
+/// - user-theme (none, dictionary): Explicit theme overrides (merged onto global state)
 /// - overrides (none, dictionary): Additional per-call overrides
 /// -> dictionary
 #let _resolve-ctx(user-theme, overrides: none) = {
-  let effective = if user-theme != none {
-    user-theme
-  } else {
-    _primaviz-theme.get()  // may be none → falls through to default
-  }
+  let global = _primaviz-theme.get()  // may be none
+  // Merge: default ← global ← user-theme (each layer wins over the one below)
   let result = (:)
   for (key, val) in default-theme {
-    if effective != none and key in effective {
-      result.insert(key, effective.at(key))
-    } else {
-      result.insert(key, val)
+    let resolved = val
+    if global != none and key in global { resolved = global.at(key) }
+    if user-theme != none and key in user-theme { resolved = user-theme.at(key) }
+    result.insert(key, resolved)
+  }
+  // Passthrough: preserve custom keys from global and user-theme
+  for source in (global, user-theme) {
+    if source != none {
+      for (key, val) in source {
+        if key not in result { result.insert(key, val) }
+      }
     }
   }
   if overrides != none {

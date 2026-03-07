@@ -102,3 +102,60 @@
     #bar-chart(simple-data, width: 100%, height: 80pt, show-values: false)
   ]
 ]
+
+#pagebreak()
+
+= Alert
+
+== All variants — default theme
+#alert(title: "Deployment complete")[Service updated to v2.4.1.]
+#v(4pt)
+#alert(title: "High memory usage", variant: "warning")[Node pool at 87%.]
+#v(4pt)
+#alert(title: "Request timeout", variant: "error")[Gateway exceeded 30s timeout.]
+#v(4pt)
+#alert(title: "All checks passing", variant: "success")[CI green for 14 builds.]
+
+== Alerts — dark theme
+#with-theme(themes.dark)[
+  #alert(title: "Dark info")[Dark theme alert.]
+  #v(4pt)
+  #alert(title: "Dark error", variant: "error")[Error in dark mode.]
+]
+
+== Alert — no title
+#alert[A simple alert with no title, just body text.]
+
+= Badge
+
+== All variants
+#badge("Default") #h(3pt)
+#badge("Secondary", variant: "secondary") #h(3pt)
+#badge("Destructive", variant: "destructive") #h(3pt)
+#badge("Outline", variant: "outline") #h(3pt)
+#badge("Success", variant: "success")
+
+== Badges — dark theme
+#with-theme(themes.dark)[
+  #badge("Dark") #h(3pt)
+  #badge("Outline", variant: "outline") #h(3pt)
+  #badge("Success", variant: "success")
+]
+
+= Separator
+
+== Default
+#separator()
+
+== Dark theme
+#with-theme(themes.dark)[
+  #separator()
+]
+
+= Theme merge test
+
+== Partial override inside with-theme preserves global
+#with-theme(themes.dark)[
+  // This should use dark background + grid enabled from the partial override
+  #bar-chart(simple-data, width: 200pt, height: 100pt, title: "dark + grid", theme: (show-grid: true))
+]
