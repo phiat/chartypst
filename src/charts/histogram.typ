@@ -4,6 +4,7 @@
 #import "../validate.typ": validate-histogram-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-y-ticks, draw-x-ticks, draw-axis-titles
+#import "../primitives/layout.typ": resolve-size
 
 /// Renders a histogram showing the frequency distribution of numeric data.
 ///
@@ -36,6 +37,8 @@
   y-label: none,
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size)
   validate-histogram-data(values, "histogram")
   let t = _resolve-ctx(theme)
 
@@ -147,4 +150,5 @@
       #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, pad-top + chart-height / 2, t)
     ]
   ]
+  })
 }

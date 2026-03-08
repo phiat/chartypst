@@ -5,6 +5,7 @@
 #import "../primitives/container.typ": chart-container
 #import "../primitives/legend.typ": draw-legend-auto
 #import "../primitives/axes.typ": draw-y-label
+#import "../primitives/layout.typ": resolve-size
 
 /// Renders a horizontal diverging bar chart where bars extend left and right
 /// from a central vertical axis. Useful for survey results (agree/disagree),
@@ -30,8 +31,11 @@
   title: none,
   show-values: true,
   bar-height: auto,
+  x-label: none,
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size)
   validate-diverging-data(data, "diverging-bar-chart")
   let t = _resolve-ctx(theme)
 
@@ -112,13 +116,15 @@
           )
         )
 
-        // Left value label — right-aligned box before bar end
+        // Left value label — placed just left of the bar end
         if show-values {
+          let label-w = 25pt
+          let l-label-x = calc.max(label-area, center-x - l-bar-w - label-w - 2pt)
           place(
             left + top,
-            dx: center-x - l-bar-w - 3em,
+            dx: l-label-x,
             dy: y-pos + actual-bar-h / 2,
-            box(width: 3em, align(right,
+            box(width: label-w, align(right,
               move(dy: -0.5em, text(size: t.value-label-size, fill: t.text-color)[#l-val])))
           )
         }
@@ -164,6 +170,11 @@
           )
         }
       }
+      // X-axis title
+      #if x-label != none {
+        place(left + top, dx: center-x, dy: chart-height + tick-area - 2pt,
+          move(dx: -3em, box(width: 6em, align(center, text(size: t.axis-title-size, fill: t.text-color)[#x-label]))))
+      }
     ]
 
     // Legend
@@ -172,4 +183,5 @@
       t, show-legend: show-legend,
     )
   ]
+  })
 }

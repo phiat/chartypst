@@ -5,6 +5,7 @@
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-axis-titles, draw-y-ticks, draw-x-category-labels
 #import "../primitives/legend.typ": draw-legend
+#import "../primitives/layout.typ": resolve-size
 
 /// Renders a waterfall (bridge) chart showing cumulative effect of positive and negative values.
 ///
@@ -38,6 +39,8 @@
   y-label: none,
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size)
   validate-simple-data(data, "waterfall-chart")
   let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
@@ -112,9 +115,6 @@
       // Grid
       #draw-grid(origin-x, pad-top, chart-width, chart-height, t)
 
-      // Axes
-      #draw-axis-lines(origin-x, origin-y, origin-x + chart-width, pad-top, t)
-
       // Y-axis ticks
       #draw-y-ticks(y-min, y-max, chart-height, pad-top, origin-x, t, digits: 0)
 
@@ -179,18 +179,22 @@
               line(
                 start: (x-end, connector-y-px),
                 end: (x-next-start, connector-y-px),
-                stroke: 0.5pt + luma(180),
+                stroke: 0.5pt + t.text-color-light,
               )
             )
           }
         }
 
-        // X-axis label
-        place(left + top, dx: x-pos, dy: origin-y + 4pt,
-          box(width: actual-bw, align(center,
+        // X-axis label — use full slot width for longer labels
+        let slot-x = origin-x + i * spacing
+        place(left + top, dx: slot-x, dy: origin-y + 4pt,
+          box(width: spacing, align(center,
             text(size: t.axis-label-size, fill: t.text-color)[#labels.at(i)])))
 
       }
+
+      // Axes (drawn after bars so axis lines appear on top)
+      #draw-axis-lines(origin-x, origin-y, origin-x + chart-width, pad-top, t)
 
       // Axis titles
       #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, pad-top + chart-height / 2, t)
@@ -204,4 +208,5 @@
       )
     }
   ]
+  })
 }

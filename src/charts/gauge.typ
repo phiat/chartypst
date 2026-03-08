@@ -4,7 +4,7 @@
 #import "../validate.typ": validate-number, validate-simple-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/polar.typ": pie-slice-points, place-donut-hole
-#import "../primitives/layout.typ": font-for-space
+#import "../primitives/layout.typ": font-for-space, resolve-size
 
 /// Renders a semicircular gauge/dial chart with a needle indicator.
 ///
@@ -31,6 +31,8 @@
   needle-color: auto,
   theme: none,
 ) = context {
+  layout(avail => {
+  let size = resolve-size(size, size, avail).width
   validate-number(value, "gauge-chart")
   let t = _resolve-ctx(theme)
   let needle-color = if needle-color == auto { t.text-color } else { needle-color }
@@ -64,7 +66,7 @@
           let end-deg = -180 + end-norm * 180
 
           let pts = pie-slice-points(cx, cy, radius, start-deg, end-deg)
-          place(left + top, polygon(fill: seg-color, stroke: white + 0.5pt, ..pts))
+          place(left + top, polygon(fill: seg-color, stroke: t.marker-stroke, ..pts))
 
           prev-threshold = threshold
         }
@@ -111,11 +113,11 @@
         left + top,
         dx: cx - cap-r,
         dy: cy - cap-r,
-        circle(radius: cap-r, fill: needle-color, stroke: white + 0.5pt)
+        circle(radius: cap-r, fill: needle-color, stroke: t.marker-stroke)
       )
 
       // Min/max labels — scale font with chart size
-      #let scale-label-size = font-for-space(size, t.axis-label-size, ratio: 0.05)
+      #let scale-label-size = font-for-space(size, t.axis-label-size, min-size: 5pt, ratio: 0.07)
       #place(left + top, dx: cx - radius, dy: cy + 0.3em,
         move(dx: -1em, text(size: scale-label-size, fill: t.text-color)[#min-val]))
       #place(left + top, dx: cx + radius, dy: cy + 0.3em,
@@ -134,7 +136,7 @@
       }
 
       // Label below value
-      #let sub-label-size = font-for-space(size, t.value-label-size, ratio: 0.05)
+      #let sub-label-size = font-for-space(size, t.value-label-size, min-size: 5pt, ratio: 0.06)
       #if label != none {
         place(
           left + top,
@@ -146,6 +148,7 @@
       }
     ]
   ]
+  })
 }
 
 /// Renders a horizontal progress bar.
@@ -173,6 +176,8 @@
   rounded: true,
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size, container: false)
   validate-number(value, "progress-bar")
   let t = _resolve-ctx(theme)
   let progress = clamp(value / max-val, 0, 1)
@@ -220,6 +225,7 @@
       }
     ]
   ]
+  })
 }
 
 /// Renders a circular progress ring indicator.
@@ -245,6 +251,8 @@
   background: luma(230),
   theme: none,
 ) = context {
+  layout(avail => {
+  let size = resolve-size(size, size, avail, container: false).width
   validate-number(value, "circular-progress")
   let t = _resolve-ctx(theme)
   let progress = clamp(value / max-val, 0, 1)
@@ -323,6 +331,7 @@
       }
     ]
   ]
+  })
 }
 
 /// Renders multiple labeled progress bars for comparing values.
@@ -346,6 +355,8 @@
   background: luma(230),
   theme: none,
 ) = context {
+  layout(size => {
+  let width = resolve-size(width, 0pt, size, container: false).width
   validate-simple-data(data, "progress-bars")
   let t = _resolve-ctx(theme)
   let labels = data.labels
@@ -360,25 +371,23 @@
       v(8pt)
     }
 
-    #for (i, lbl) in labels.enumerate() {
-      let val = values.at(i)
-      let progress = val / actual-max
-
-      grid(
-        columns: (70pt, 1fr, if show-values { 40pt } else { 0pt }),
-        column-gutter: 8pt,
-        row-gutter: 6pt,
-
-        text(size: t.axis-label-size, fill: t.text-color)[#lbl],
-
-        box(width: 100%, height: bar-height)[
-          #rect(width: 100%, height: 100%, fill: background, radius: 3pt)
-          #place(left + top, rect(width: 100% * progress, height: 100%, fill: get-color(t, i), radius: 3pt))
-        ],
-
-        if show-values { text(size: t.value-label-size, fill: t.text-color, weight: "bold")[#val] }
-      )
-      v(4pt)
-    }
+    #grid(
+      columns: (auto, 1fr, if show-values { auto } else { 0pt }),
+      column-gutter: 6pt,
+      row-gutter: 6pt,
+      ..labels.enumerate().map(((i, lbl)) => {
+        let val = values.at(i)
+        let progress = val / actual-max
+        (
+          text(size: t.axis-label-size, fill: t.text-color)[#lbl],
+          box(width: 100%, height: bar-height)[
+            #rect(width: 100%, height: 100%, fill: background, radius: 3pt)
+            #place(left + top, rect(width: 100% * progress, height: 100%, fill: get-color(t, i), radius: 3pt))
+          ],
+          if show-values { text(size: t.value-label-size, fill: t.text-color, weight: "bold")[#val] },
+        )
+      }).flatten()
+    )
   ]
+  })
 }

@@ -4,6 +4,7 @@
 #import "../validate.typ": validate-boxplot-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-y-ticks, draw-x-category-labels, draw-grid, draw-axis-titles
+#import "../primitives/layout.typ": resolve-size
 
 /// Renders a box-and-whisker plot for comparing distributions.
 ///
@@ -30,6 +31,8 @@
   y-label: none,
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size)
   validate-boxplot-data(data, "box-plot")
   let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
   let t = _resolve-ctx(theme, overrides: grid-overrides)
@@ -71,7 +74,7 @@
 
       // X-axis category labels
       #let spacing = chart-width / n
-      #draw-x-category-labels(labels, origin-x, spacing, origin-y + 4pt, t, center-offset: spacing / 2 - 10pt)
+      #draw-x-category-labels(labels, origin-x, spacing, origin-y + 4pt, t)
 
       // Axis titles
       #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, origin-y / 2, t)
@@ -157,4 +160,5 @@
       }
     ]
   ]
+  })
 }

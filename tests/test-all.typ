@@ -36,3 +36,5 @@
 #include "test-options.typ"
 #pagebreak()
 #include "test-color.typ"
+#pagebreak()
+#include "test-dashboard.typ"

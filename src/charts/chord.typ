@@ -3,6 +3,7 @@
 #import "../validate.typ": validate-chord-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/polar.typ": arc-points as polar-arc-points, place-polar-label
+#import "../primitives/layout.typ": resolve-size
 
 /// Renders a chord diagram showing relationships and flows between entities
 /// arranged around a circular ring.
@@ -32,6 +33,8 @@
   gap: 2,
   theme: none,
 ) = context {
+  layout(avail => {
+  let size = resolve-size(size, size, avail).width
   validate-chord-data(data, "chord-diagram")
   let t = _resolve-ctx(theme)
 
@@ -51,11 +54,11 @@
 
   // Guard: nothing to draw if all flows are zero
   if grand-total == 0 {
-    return chart-container(size, size, title, t)[
+    return align(center, chart-container(size, size, title, t)[
       #box(width: size, height: size)[
         #place(center + horizon, text(size: 9pt, fill: t.text-color)[No flow data])
       ]
-    ]
+    ])
   }
 
   let radius = size / 2
@@ -113,7 +116,7 @@
   let cursor = array.range(n).map(_ => 0.0)
 
   // ── Render ───────────────────────────────────────────────────────────
-  chart-container(size, size, title, t, extra-height: 30pt)[
+  align(center, chart-container(size, size, title, t, extra-height: 30pt)[
     #box(width: size, height: size)[
       // --- Draw chords first (behind arcs) ---
       #for i in array.range(n) {
@@ -217,5 +220,6 @@
         }
       }
     ]
-  ]
+  ])
+  })
 }

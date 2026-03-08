@@ -3,6 +3,7 @@
 #import "../util.typ": nonzero
 #import "../validate.typ": validate-wordcloud-data
 #import "../primitives/container.typ": chart-container
+#import "../primitives/layout.typ": resolve-size
 
 /// Renders a word cloud using spiral placement (Wordle-style algorithm).
 ///
@@ -33,6 +34,8 @@
   shape: "rectangle",
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size)
   validate-wordcloud-data(data, "word-cloud")
   let t = _resolve-ctx(theme)
   let words = data.words
@@ -170,4 +173,5 @@
       }
     ]
   ]
+  })
 }

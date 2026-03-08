@@ -1,7 +1,7 @@
 // scatter.typ - Scatter plot and bubble chart
 #import "../theme.typ": _resolve-ctx, get-color
 #import "../util.typ": nonzero, clamp, nice-ceil, nice-floor, numeric-range
-#import "../primitives/layout.typ": label-fits-inside, place-cartesian-label, try-fit-label, greedy-deconflict
+#import "../primitives/layout.typ": label-fits-inside, place-cartesian-label, try-fit-label, greedy-deconflict, resolve-size
 #import "../validate.typ": validate-scatter-data, validate-multi-scatter-data, validate-bubble-data, validate-multi-bubble-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-axis-titles, draw-y-ticks, draw-x-ticks
@@ -35,6 +35,8 @@
   annotations: none,
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size)
   validate-scatter-data(data, "scatter-plot")
   let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
   let t = _resolve-ctx(theme, overrides: grid-overrides)
@@ -89,7 +91,7 @@
           left + top,
           dx: px - half,
           dy: py - half,
-          circle(radius: point-size / 2, fill: point-color, stroke: white + 0.5pt)
+          circle(radius: point-size / 2, fill: point-color, stroke: t.marker-stroke)
         )
       }
 
@@ -100,6 +102,7 @@
       #draw-annotations(annotations, origin-x, pad-top, chart-width, chart-height, x-min, x-max, y-min, y-max, t)
     ]
   ]
+  })
 }
 
 /// Renders a multi-series scatter plot with color-coded point groups.
@@ -127,6 +130,8 @@
   show-legend: true,
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size)
   validate-multi-scatter-data(data, "multi-scatter-plot")
   let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
   let t = _resolve-ctx(theme, overrides: grid-overrides)
@@ -183,15 +188,18 @@
             left + top,
             dx: px - half,
             dy: py - half,
-            circle(radius: point-size / 2, fill: color, stroke: white + 0.5pt)
+            circle(radius: point-size / 2, fill: color, stroke: t.marker-stroke)
           )
         }
       }
+
+      #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, origin-y / 2, t)
     ]
 
     // Legend
     #draw-legend-auto(series.map(s => s.name), t, show-legend: show-legend, swatch-type: "circle")
   ]
+  })
 }
 
 /// Renders a bubble chart where each point has an x, y, and size dimension.
@@ -226,6 +234,8 @@
   labels: none,
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size)
   validate-bubble-data(data, "bubble-chart")
   let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
   let t = _resolve-ctx(theme, overrides: grid-overrides)
@@ -395,6 +405,7 @@
       draw-size-legend(ref-sizes, max-radius, size-max, t, title: size-label)
     }
   ]
+  })
 }
 
 /// Renders a multi-series bubble chart with color-coded point groups and
@@ -427,6 +438,8 @@
   show-legend: true,
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size)
   validate-multi-bubble-data(data, "multi-bubble-chart")
   let grid-overrides = if show-grid != auto { (show-grid: show-grid) } else { none }
   let t = _resolve-ctx(theme, overrides: grid-overrides)
@@ -514,4 +527,5 @@
       draw-size-legend(ref-sizes, max-radius, size-max, t, title: size-label)
     }
   ]
+  })
 }

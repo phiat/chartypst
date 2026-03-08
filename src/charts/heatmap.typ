@@ -1,8 +1,8 @@
 // heatmap.typ - Heatmap/matrix charts
 #import "../theme.typ": _resolve-ctx, get-color
-#import "../util.typ": lerp-color, heat-color, nonzero, day-of-week
+#import "../util.typ": lerp-color, heat-color, nonzero, day-of-week, contrast-text
 #import "../validate.typ": validate-heatmap-data, validate-calendar-data, validate-correlation-data
-#import "../primitives/container.typ": chart-container
+#import "../primitives/container.typ": chart-container, container-inset
 #import "../primitives/layout.typ": density-skip
 #import "../primitives/legend.typ": draw-gradient-legend
 
@@ -27,6 +27,7 @@
   reverse: false,
   theme: none,
 ) = context {
+  layout(avail => {
   validate-heatmap-data(data, "heatmap")
   let t = _resolve-ctx(theme)
   let rows = data.rows
@@ -42,9 +43,16 @@
   let max-val = calc.max(..all-vals)
   let val-range = nonzero(max-val - min-val)
 
-  let row-label-width = calc.max(30pt, n-cols * cell-size * 0.2 + 20pt)
-  let col-label-height = calc.max(30pt, cell-size * 1.8)
-  let legend-width = if show-legend { 60pt } else { 0pt }
+  let row-label-width = calc.max(30pt, n-cols * cell-size * 0.15 + 15pt)
+  let col-label-height = calc.max(30pt, cell-size * 1.5)
+  let legend-width = if show-legend { 40pt } else { 0pt }
+
+  // Shrink cell-size if total width exceeds available space
+  let overhead = row-label-width + legend-width + 20pt + 2 * container-inset
+  let avail-w = if type(avail.width) == length and avail.width > 0pt { avail.width } else { none }
+  let cell-size = if avail-w != none and n-cols * cell-size + overhead > avail-w {
+    (avail-w - overhead) / n-cols
+  } else { cell-size }
 
   let grid-width = n-cols * cell-size
   let grid-height = n-rows * cell-size
@@ -89,14 +97,13 @@
               width: cell-size,
               height: cell-size,
               fill: cell-color,
-              stroke: white + 0.5pt,
+              stroke: t.marker-stroke,
             )
           )
 
           // Value label — centered in cell
           if show-values {
-            let is-dark = if reverse { normalized < 0.5 } else { normalized > 0.5 }
-            let text-color = if is-dark { t.text-color-inverse } else { t.text-color }
+            let text-color = contrast-text(cell-color)
             place(
               left + top,
               dx: row-label-width + j * cell-size,
@@ -119,6 +126,7 @@
       }
     ]
   ]
+  })
 }
 
 /// Renders a calendar-style heatmap grid (similar to a GitHub contribution graph).
@@ -168,25 +176,34 @@
   let empty-fill = if t.background != none { t.background.lighten(15%) } else { luma(235) }
   let empty-stroke = if t.background != none { 0.5pt + t.text-color-light } else { 0.5pt + luma(210) }
 
-  chart-container(day-label-width + n-weeks * cell-size + 20pt, month-label-height + 7 * cell-size, title, t, extra-height: 40pt)[
-    #box[
-      // Month labels along the top (x-axis)
+  let legend-min-w = 25pt + 5 * (cell-size + 2pt) + 5pt + 25pt  // Less + boxes + More
+  let grid-w = n-weeks * cell-size
+  let body-w = day-label-width + calc.max(grid-w, legend-min-w) + 20pt
+  align(center, chart-container(body-w, month-label-height + 7 * cell-size, title, t, extra-height: 40pt)[
+    #box(width: body-w)[
+      // Month labels along the top (x-axis) — skip labels that would overlap
       #if show-month-labels {
         let month-names = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
         let prev-month = ""
+        let last-label-x = -100pt  // track last placed label x to prevent overlap
+        let min-label-gap = 20pt   // minimum horizontal gap between month labels
         for (i, dt) in dates.enumerate() {
           let parts = dt.split("-")
           let month-str = if parts.len() >= 2 { parts.at(1) } else { "" }
           if month-str != prev-month and month-str != "" {
-            // Position based on actual grid column (accounting for start offset)
             let grid-idx = start-dow + i
             let week = calc.floor(grid-idx / 7)
+            let label-x = day-label-width + week * cell-size
             let month-idx = int(month-str) - 1
             let label = if month-idx >= 0 and month-idx < 12 { month-names.at(month-idx) } else { month-str }
-            place(left + top,
-              dx: day-label-width + week * cell-size,
-              dy: 0pt,
-              text(size: 6pt, fill: t.text-color)[#label])
+            // Only place if far enough from previous label
+            if label-x - last-label-x >= min-label-gap {
+              place(left + top,
+                dx: label-x,
+                dy: 0pt,
+                text(size: t.axis-label-size * 0.85, fill: t.text-color)[#label])
+              last-label-x = label-x
+            }
             prev-month = month-str
           }
         }
@@ -201,7 +218,7 @@
               left + top,
               dx: 0pt,
               dy: month-label-height + i * cell-size + cell-size / 2,
-              move(dy: -0.5em, text(size: 6pt, fill: t.text-color)[#day])
+              move(dy: -0.5em, text(size: t.axis-label-size * 0.85, fill: t.text-color)[#day])
             )
           }
         }
@@ -266,22 +283,25 @@
         }
       }
 
-      // Legend
+      // Legend — centered under the grid
       #let legend-y = month-label-height + 7 * cell-size + 10pt
-      #place(left + top, dx: day-label-width, dy: legend-y, text(size: 6pt, fill: t.text-color)[Less])
+      #let legend-total-w = 25pt + 5 * (cell-size + 2pt) + 5pt + 25pt  // Less + boxes + More
+      #let grid-width = n-weeks * cell-size
+      #let legend-start = day-label-width + calc.max(0pt, (grid-width - legend-total-w) / 2)
+      #place(left + top, dx: legend-start, dy: legend-y, text(size: t.axis-label-size * 0.85, fill: t.text-color)[Less])
       #for i in array.range(5) {
         let normalized = i / 4
         let cell-color = heat-color(normalized, palette: palette, reverse: reverse)
         place(
           left + top,
-          dx: day-label-width + 25pt + i * (cell-size + 2pt),
+          dx: legend-start + 25pt + i * (cell-size + 2pt),
           dy: legend-y,
           rect(width: cell-size, height: cell-size, fill: cell-color, radius: 2pt)
         )
       }
-      #place(left + top, dx: day-label-width + 25pt + 5 * (cell-size + 2pt) + 5pt, dy: legend-y, text(size: 6pt, fill: t.text-color)[More])
+      #place(left + top, dx: legend-start + 25pt + 5 * (cell-size + 2pt) + 5pt, dy: legend-y, text(size: t.axis-label-size * 0.85, fill: t.text-color)[More])
     ]
-  ]
+  ])
 }
 
 /// Renders a correlation matrix as a symmetric heatmap (blue to red for -1 to +1).
@@ -299,6 +319,7 @@
   show-values: true,
   theme: none,
 ) = context {
+  layout(avail => {
   validate-correlation-data(data, "correlation-matrix")
   let t = _resolve-ctx(theme)
   let labels = data.labels
@@ -306,6 +327,13 @@
   let n = labels.len()
 
   let label-area = 50pt
+
+  // Shrink cell-size if total width exceeds available space
+  let overhead = label-area + 20pt + 2 * container-inset
+  let avail-w = if type(avail.width) == length and avail.width > 0pt { avail.width } else { none }
+  let cell-size = if avail-w != none and n * cell-size + overhead > avail-w {
+    (avail-w - overhead) / n
+  } else { cell-size }
 
   // Correlation color: blue (-1) -> white (0) -> red (+1)
   let corr-color(val) = {
@@ -347,6 +375,7 @@
         // Cells
         for (j, val) in values.at(i).enumerate() {
           let cell-color = corr-color(val)
+          let cell-stroke = if t.background != none { t.background + 0.5pt } else { white + 0.5pt }
 
           place(
             left + top,
@@ -356,12 +385,14 @@
               width: cell-size,
               height: cell-size,
               fill: cell-color,
-              stroke: white + 0.5pt,
+              stroke: cell-stroke,
             )
           )
 
           if show-values {
-            let text-color = if calc.abs(val) > 0.5 { t.text-color-inverse } else { t.text-color }
+            // Cell backgrounds are always white-based (blue-white-red), so use
+            // fixed dark/light text regardless of theme to ensure contrast
+            let text-color = if calc.abs(val) > 0.5 { white } else { black }
             place(
               left + top,
               dx: label-area + j * cell-size,
@@ -375,4 +406,5 @@
       }
     ]
   ]
+  })
 }

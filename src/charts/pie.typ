@@ -1,7 +1,7 @@
 // pie.typ - Pie and donut charts
 #import "../theme.typ": _resolve-ctx, get-color
 #import "../util.typ": normalize-data
-#import "../primitives/layout.typ": font-for-space, try-fit-label
+#import "../primitives/layout.typ": font-for-space, try-fit-label, resolve-size
 #import "../validate.typ": validate-simple-data
 #import "../primitives/container.typ": chart-container
 #import "../primitives/legend.typ": draw-legend-vertical
@@ -25,9 +25,11 @@
   show-legend: true,
   show-percentages: true,
   donut: false,
-  donut-ratio: 0.5,
+  donut-ratio: 0.4,
   theme: none,
 ) = context {
+  layout(avail => {
+  let size = resolve-size(size, size, avail).width
   validate-simple-data(data, "pie-chart")
   let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
@@ -36,27 +38,45 @@
 
   let total = values.sum()
   let n = values.len()
-  let radius = size / 2
 
   // Respect both show-legend param and theme legend-position
   let show-legend = show-legend and t.legend-position != "none"
 
   // Calculate legend width — ensure enough room for label text + percentages
-  let legend-width = if size < 120pt { calc.max(100pt, calc.min(150pt, n * 18pt + 30pt)) } else { calc.max(130pt, calc.min(180pt, n * 20pt + 40pt)) }
+  let legend-gap = if show-legend { 20pt } else { 0pt }
+  let legend-width = if not show-legend { 0pt } else if size < 120pt { calc.max(100pt, calc.min(150pt, n * 18pt + 30pt)) } else { calc.max(130pt, calc.min(180pt, n * 20pt + 40pt)) }
 
-  // Total width: pie + gap + legend (if shown)
-  let total-width = size + (if show-legend { 20pt + legend-width } else { 0pt })
+  // Total width: pie + gap + legend — clamp to available width
+  // Subtract container inset (2×8pt) since chart-container adds it to the outer box
+  let container-inset = 16pt
+  let avail-w = if type(avail.width) == length and avail.width > 0pt { avail.width } else { none }
+  let total-width = size + legend-gap + legend-width
+  if avail-w != none and total-width + container-inset > avail-w {
+    let budget = avail-w - container-inset
+    // Shrink pie to fit, keeping legend width
+    let pie-budget = budget - legend-gap - legend-width
+    if pie-budget >= 80pt {
+      size = pie-budget
+    } else {
+      // Both need shrinking — give pie 60% of space
+      size = budget * 0.55
+      legend-width = budget - size - legend-gap
+    }
+    total-width = budget
+  }
+
+  let radius = size / 2
 
   // Compute legend height — grow container if legend is taller than pie
   let swatch-size = 10pt
   let legend-height = if show-legend { n * (swatch-size + 4pt) + 10pt } else { 0pt }
   let extra-height = calc.max(40pt, legend-height - size + 40pt)
 
-  chart-container(total-width, size, title, t, extra-height: extra-height)[
+  align(center, chart-container(total-width, size, title, t, extra-height: extra-height)[
     // Use a grid layout to keep pie and legend separate
     #grid(
       columns: if show-legend { (size, legend-width) } else { (size,) },
-      column-gutter: 20pt,
+      column-gutter: legend-gap,
 
       // Pie chart
       box(width: size, height: size)[
@@ -111,14 +131,15 @@
         }
       ],
 
-      // Legend (if shown)
+      // Legend (if shown) — vertically centered relative to pie
       if show-legend {
         let legend-entries = labels.enumerate().map(((i, lbl)) => {
           let pct = calc.round((values.at(i) / total) * 100, digits: 1)
           str(lbl) + " (" + str(pct) + "%)"
         })
-        draw-legend-vertical(legend-entries, t, width: legend-width)
+        align(horizon, draw-legend-vertical(legend-entries, t, width: legend-width))
       }
     )
-  ]
+  ])
+  })
 }

@@ -1,5 +1,36 @@
 // layout.typ - Layout utility functions for chart sizing and label placement
 
+/// Resolves width and height to absolute lengths using the available region size.
+/// Call inside `layout(size => ...)`. Handles ratio (100%), relative (100% - 5pt),
+/// and absolute (300pt) values.
+///
+/// When `container: true` (the default), reserves space for chart-container's
+/// inset padding so charts don't overflow their grid cells. Set `container: false`
+/// for charts that render into a plain box without chart-container.
+///
+/// - width (length, ratio, relative): Width to resolve
+/// - height (length, ratio, relative): Height to resolve
+/// - size (dictionary): Available region from `layout(size => ...)`
+/// - container (bool): Whether to reserve space for chart-container inset
+/// -> dictionary with `width` and `height` keys
+#let resolve-size(width, height, size, container: true) = {
+  import "../primitives/container.typ": container-inset
+  let margin = if container { 2 * container-inset } else { 0pt }
+  let resolve(val, avail) = {
+    let resolved = if type(val) == length { val }
+      else if type(val) == ratio { avail * (val / 100%) }
+      else if type(val) == relative { val.length + avail * (val.ratio / 100%) }
+      else { val }
+    // Clamp to available space so charts don't overflow containers.
+    if type(resolved) == length and type(avail) == length and avail > 0pt {
+      calc.min(resolved, avail - margin)
+    } else {
+      resolved
+    }
+  }
+  (width: resolve(width, size.width), height: resolve(height, size.height))
+}
+
 /// Checks whether a text label fits inside a given rectangular area.
 ///
 /// Uses a heuristic based on character width ratio to estimate text width.

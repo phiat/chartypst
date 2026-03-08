@@ -5,6 +5,7 @@
 #import "../primitives/container.typ": chart-container
 #import "../primitives/axes.typ": cartesian-layout, draw-axis-lines, draw-grid, draw-axis-titles, draw-y-ticks, draw-x-even-labels
 #import "../primitives/legend.typ": draw-legend-auto
+#import "../primitives/layout.typ": resolve-size
 
 /// Renders a single-series area chart with a filled region below the line.
 ///
@@ -33,6 +34,8 @@
   y-label: none,
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size)
   validate-simple-data(data, "area-chart")
   let t = _resolve-ctx(theme)
   let norm = normalize-data(data)
@@ -117,7 +120,7 @@
             left + top,
             dx: pt.at(0) - 3pt,
             dy: pt.at(1) - 3pt,
-            circle(radius: 3pt, fill: get-color(t, 0), stroke: white + 1pt)
+            circle(radius: 3pt, fill: get-color(t, 0), stroke: t.marker-stroke)
           )
         }
       }
@@ -129,6 +132,7 @@
       #draw-axis-titles(x-label, y-label, origin-x + chart-width / 2, origin-y / 2, t)
     ]
   ]
+  })
 }
 
 /// Renders a stacked area chart with multiple series layered cumulatively.
@@ -156,6 +160,8 @@
   y-label: none,
   theme: none,
 ) = context {
+  layout(size => {
+  let (width, height) = resolve-size(width, height, size)
   validate-series-data(data, "stacked-area-chart")
   let t = _resolve-ctx(theme)
   let labels = data.labels
@@ -241,4 +247,5 @@
     // Legend
     #draw-legend-auto(series.map(s => s.name), t, show-legend: show-legend)
   ]
+  })
 }

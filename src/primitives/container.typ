@@ -3,12 +3,15 @@
 #import "../theme.typ": *
 #import "./title.typ": draw-title
 
+/// Inset padding added by chart-container to all containers.
+/// Exported so resolve-size can subtract it when clamping.
+#let container-inset = 8pt
+
 // Wraps chart body in a box with optional background/border and title.
-// Adds inset padding when background is set (dark themes, etc.) to prevent content
-// from touching the container edges.
+// Adds inset padding so light and dark themes render at the same outer size.
 #let chart-container(width, height, title, theme, extra-height: 0pt, legend: none, legend-width: 120pt, subtitle: none, radius: 0pt, body) = {
   let has-bg = theme.background != none
-  let pad = if has-bg { 8pt } else { 0pt }
+  let pad = container-inset
   let has-subtitle = subtitle != none
   let subtitle-overhead = if has-subtitle { theme.at("subtitle-size", default: theme.axis-title-size) + 3pt } else { 0pt }
   let title-overhead = if title != none { theme.title-size + theme.title-gap + 4pt + subtitle-overhead } else { if has-subtitle { subtitle-overhead + theme.title-gap + 4pt } else { 0pt } }
@@ -30,6 +33,7 @@
       grid(
         columns: (width, 1fr),
         column-gutter: 10pt,
+        align: (auto, horizon),
         body,
         legend,
       )
@@ -37,6 +41,7 @@
       grid(
         columns: (1fr, width),
         column-gutter: 10pt,
+        align: (horizon, auto),
         legend,
         body,
       )
