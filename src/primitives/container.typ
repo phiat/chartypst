@@ -30,15 +30,32 @@
       legend
     }
     #if lp == "right" and legend != none {
-      box(width: width + legend-width + 10pt, height: height)[
-        #place(left + top, box(width: width, height: height, body))
-        #place(right + horizon, box(width: legend-width, legend))
-      ]
+      context {
+        let legend-h = measure(legend).height
+        // Center legend relative to chart; allow negative dy when legend is taller
+        let legend-dy = (height - legend-h) / 2
+        let content-h = calc.max(height, legend-h)
+        // Shift both chart and legend down if legend extends above chart
+        let base-dy = if legend-dy < 0pt { -legend-dy } else { 0pt }
+        box(width: width + legend-width + 10pt, height: content-h)[
+          #place(left + top, dy: base-dy, box(width: width, height: height, body))
+          #place(left + top, dx: width + 10pt, dy: base-dy + legend-dy,
+            box(width: legend-width, legend))
+        ]
+      }
     } else if lp == "left" and legend != none {
-      box(width: width + legend-width + 10pt, height: height)[
-        #place(left + horizon, box(width: legend-width, legend))
-        #place(right + top, box(width: width, height: height, body))
-      ]
+      context {
+        let legend-h = measure(legend).height
+        let legend-dy = (height - legend-h) / 2
+        let content-h = calc.max(height, legend-h)
+        let base-dy = if legend-dy < 0pt { -legend-dy } else { 0pt }
+        box(width: width + legend-width + 10pt, height: content-h)[
+          #place(left + top, dy: base-dy + legend-dy,
+            box(width: legend-width, legend))
+          #place(left + top, dx: legend-width + 10pt, dy: base-dy,
+            box(width: width, height: height, body))
+        ]
+      }
     } else {
       body
       if legend != none and lp == "bottom" {
