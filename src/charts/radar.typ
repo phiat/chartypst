@@ -200,7 +200,7 @@
 
       // Legend — vertically centered with the chart
       if legend-width > 0pt {
-        align(horizon, draw-legend-vertical(series.map(s => s.name), t, width: legend-width))
+        box(height: size, align(horizon, draw-legend-vertical(series.map(s => s.name), t, width: legend-width)))
       }
     )
   ])

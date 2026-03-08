@@ -105,7 +105,7 @@
             let pct-text = str(pct) + "%"
             let pct-len = pct-text.len()
             // Approximate available width from arc at label distance
-            let label-dist = radius * (if donut { 0.75 } else { 0.6 })
+            let label-dist = radius * (if donut { 0.75 } else { 0.7 })
             let arc-w = (label-dist / 1pt) * slice-deg / 360 * 2 * calc.pi * 1pt
             let arc-h = radius * 0.3  // radial height available
             let fit = try-fit-label(arc-w, arc-h, t.value-label-size, pct-len, shrink-min: 5pt)
@@ -137,7 +137,7 @@
           let pct = calc.round((values.at(i) / total) * 100, digits: 1)
           str(lbl) + " (" + str(pct) + "%)"
         })
-        align(horizon, draw-legend-vertical(legend-entries, t, width: legend-width))
+        box(height: size, align(horizon, draw-legend-vertical(legend-entries, t, width: legend-width)))
       }
     )
   ])
