@@ -63,7 +63,7 @@
   // Colors: start uses palette color 0, end uses palette color 1
   let start-color = get-color(t, 0)
   let end-color = get-color(t, 1)
-  let connector-color = luma(180)
+  let connector-color = t.text-color-light
 
   // Build legend entries
   let legend-entries = (

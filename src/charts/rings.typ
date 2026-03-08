@@ -23,8 +23,8 @@
   let t = _resolve-ctx(theme)
   let n = entries.len()
 
-  // Total width needed for labels column
-  let label-col-width = if show-labels { 90pt } else { 0pt }
+  // Total width needed for labels column — scale with ring size
+  let label-col-width = if show-labels { calc.max(70pt, size * 0.5) } else { 0pt }
 
   // Margin to prevent ring strokes from clipping at the container edge
   let margin = ring-width / 2 + 2pt

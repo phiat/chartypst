@@ -40,6 +40,15 @@
   let size = resolve-size(size, size, avail).width
   validate-simple-data(data, "waffle-chart")
   let t = _resolve-ctx(theme)
+
+  // Shrink grid size if total width (grid + legend + padding) exceeds available space
+  let legend-overhead = if show-legend { 120pt + 10pt } else { 0pt }
+  let pad2 = 16pt  // 2 * container-inset
+  let avail-w = if type(avail.width) == length and avail.width > 0pt { avail.width } else { none }
+  if avail-w != none and size + legend-overhead + pad2 > avail-w {
+    size = avail-w - legend-overhead - pad2
+  }
+
   let norm = normalize-data(data)
   let labels = norm.labels
   let values = norm.values

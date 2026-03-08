@@ -10,17 +10,17 @@
 
 #page-grid(cols: 2, rows: 2, col-gutter: 16pt, row-gutter: 24pt, (
   [
-    #text(size: 9pt, weight: "bold")[metric-row]
+    #align(center, text(size: 9pt, weight: "bold")[metric-row])
     #v(4pt)
     #metric-row(sales.kpis,
       width: 250pt, gap: 5pt, theme: lt,
     )
   ],
   word-cloud(words,
-    width: W, height: 300pt, title: "word-cloud (dark, circle)", shape: "circle", theme: dk,
+    width: W, height: 300pt, title: "word-cloud (dark, circle)", shape: "circle", max-size: 22pt, theme: dk,
   ),
   [
-    #text(size: 9pt, weight: "bold")[sparkline / sparkbar / sparkdot]
+    #align(center, text(size: 9pt, weight: "bold")[sparkline / sparkbar / sparkdot])
     #v(4pt)
     #table(
       columns: (auto, auto, auto, auto),
@@ -62,7 +62,7 @@
     #alert([All tests passing.], variant: "success", title: "Success", theme: dk)
   ],
   [
-    #text(size: 9pt, weight: "bold")[badges + separator]
+    #align(center, text(size: 9pt, weight: "bold")[badges + separator])
     #v(4pt)
     #badge("Default", variant: "default", theme: lt)
     #h(4pt)

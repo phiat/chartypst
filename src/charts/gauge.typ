@@ -371,26 +371,23 @@
       v(8pt)
     }
 
-    #for (i, lbl) in labels.enumerate() {
-      let val = values.at(i)
-      let progress = val / actual-max
-
-      grid(
-        columns: (70pt, 1fr, if show-values { 40pt } else { 0pt }),
-        column-gutter: 8pt,
-        row-gutter: 6pt,
-
-        text(size: t.axis-label-size, fill: t.text-color)[#lbl],
-
-        box(width: 100%, height: bar-height)[
-          #rect(width: 100%, height: 100%, fill: background, radius: 3pt)
-          #place(left + top, rect(width: 100% * progress, height: 100%, fill: get-color(t, i), radius: 3pt))
-        ],
-
-        if show-values { text(size: t.value-label-size, fill: t.text-color, weight: "bold")[#val] }
-      )
-      v(4pt)
-    }
+    #grid(
+      columns: (auto, 1fr, if show-values { auto } else { 0pt }),
+      column-gutter: 6pt,
+      row-gutter: 6pt,
+      ..labels.enumerate().map(((i, lbl)) => {
+        let val = values.at(i)
+        let progress = val / actual-max
+        (
+          text(size: t.axis-label-size, fill: t.text-color)[#lbl],
+          box(width: 100%, height: bar-height)[
+            #rect(width: 100%, height: 100%, fill: background, radius: 3pt)
+            #place(left + top, rect(width: 100% * progress, height: 100%, fill: get-color(t, i), radius: 3pt))
+          ],
+          if show-values { text(size: t.value-label-size, fill: t.text-color, weight: "bold")[#val] },
+        )
+      }).flatten()
+    )
   ]
   })
 }

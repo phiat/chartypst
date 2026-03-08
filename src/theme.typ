@@ -191,6 +191,11 @@
 // Usage: `chart(data, theme: minimal-theme)` or `chart(data, theme: dark-theme)`
 
 #let minimal-theme = resolve-theme((
+  palette: (
+    rgb("#7a9ec2"), rgb("#d4a76a"), rgb("#c27a7c"), rgb("#8ebdb9"),
+    rgb("#7fb07a"), rgb("#d4c36e"), rgb("#b99cb2"), rgb("#e0b3b8"),
+    rgb("#b09a89"), rgb("#c5beb9"),
+  ),
   axis-stroke: 0.3pt + luma(150),
   grid-stroke: 0.3pt + luma(240),
   show-grid: true,

@@ -91,8 +91,8 @@
 
       // Time labels along the bottom — below the axis line
       #let label-font = font-for-space(col-width, t.axis-label-size)
-      #let skip-n = density-skip(time-count, timeline-width)
       #let rotate-labels = time-count > 8
+      #let skip-n = density-skip(time-count, timeline-width, min-spacing: if rotate-labels { 18pt } else { 12pt })
       #let axis-y = body-height - 20pt
       #let label-y = axis-y + 4pt  // below the axis line
       #for (i, lbl) in time-labels.enumerate() {

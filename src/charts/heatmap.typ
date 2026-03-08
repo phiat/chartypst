@@ -1,6 +1,6 @@
 // heatmap.typ - Heatmap/matrix charts
 #import "../theme.typ": _resolve-ctx, get-color
-#import "../util.typ": lerp-color, heat-color, nonzero, day-of-week
+#import "../util.typ": lerp-color, heat-color, nonzero, day-of-week, contrast-text
 #import "../validate.typ": validate-heatmap-data, validate-calendar-data, validate-correlation-data
 #import "../primitives/container.typ": chart-container, container-inset
 #import "../primitives/layout.typ": density-skip
@@ -103,8 +103,7 @@
 
           // Value label — centered in cell
           if show-values {
-            let is-dark = if reverse { normalized < 0.5 } else { normalized > 0.5 }
-            let text-color = if is-dark { t.text-color-inverse } else { t.text-color }
+            let text-color = contrast-text(cell-color)
             place(
               left + top,
               dx: row-label-width + j * cell-size,

@@ -6,7 +6,7 @@
 /// - c (color): Input color
 /// -> color
 #let contrast-text(c) = {
-  let comps = c.components()
+  let comps = rgb(c).components()
   let r = comps.at(0) / 100%
   let g = comps.at(1) / 100%
   let b = comps.at(2) / 100%
