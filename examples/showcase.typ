@@ -201,8 +201,8 @@
     width: W, height: 110pt, title: "treemap", theme: dk,
   ),
 
-  // 29. sankey-chart — League: transfer flows
-  sankey-chart(league.transfers,
+  // 29. sankey-chart — Sales: budget allocation flow
+  sankey-chart(sales.budget-flow,
     width: W, height: 110pt, title: "sankey-chart", show-labels: true, theme: dk,
   ),
 
