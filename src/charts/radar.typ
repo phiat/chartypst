@@ -62,9 +62,17 @@
   let cx = size / 2
   let cy = size / 2
 
-  align(center, chart-container(total-width, size, title, t, extra-height: 40pt)[
-    #grid(
-      columns: if legend-width > 0pt { (size, legend-width) } else { (size,) },
+  // Build legend content for chart-container's built-in side legend support
+  let legend-content = if show-legend and legend-width > 0pt {
+    draw-legend-vertical(series.map(s => s.name), t, width: legend-width)
+  }
+  let t-with-legend = if legend-content != none {
+    let d = t
+    d.insert("legend-position", "right")
+    d
+  } else { t }
+
+  align(center, chart-container(size, size, title, t-with-legend, extra-height: 40pt, legend: legend-content, legend-width: legend-width)[
 
       // Radar chart
       box(width: size, height: size)[
@@ -196,13 +204,7 @@
             }
           }
         }
-      ],
-
-      // Legend — vertically centered with the chart
-      if legend-width > 0pt {
-        box(height: size, align(horizon, draw-legend-vertical(series.map(s => s.name), t, width: legend-width)))
-      }
-    )
+      ]
   ])
   })
 }

@@ -67,79 +67,83 @@
 
   let radius = size / 2
 
+  // Build legend content
+  let legend-entries = if show-legend {
+    labels.enumerate().map(((i, lbl)) => {
+      let pct = calc.round((values.at(i) / total) * 100, digits: 1)
+      str(lbl) + " (" + str(pct) + "%)"
+    })
+  } else { () }
+  let legend-content = if show-legend {
+    draw-legend-vertical(legend-entries, t, width: legend-width)
+  }
+
   // Compute legend height — grow container if legend is taller than pie
   let swatch-size = t.legend-swatch-size
   let legend-height = if show-legend { n * (swatch-size + 4pt) + 10pt } else { 0pt }
   let extra-height = calc.max(40pt, legend-height - size + 40pt)
 
-  align(center, chart-container(total-width, size, title, t, extra-height: extra-height)[
-    // Use a grid layout to keep pie and legend separate
-    #grid(
-      columns: if show-legend { (size, legend-width) } else { (size,) },
-      column-gutter: legend-gap,
+  // Use chart-container's built-in side legend support for proper vertical centering
+  let legend-pos-override = if show-legend { "right" } else { "none" }
+  let t-with-legend = if show-legend {
+    let d = t
+    d.insert("legend-position", legend-pos-override)
+    d
+  } else { t }
 
-      // Pie chart
-      box(width: size, height: size)[
-        #let center-x = radius
-        #let center-y = radius
-        #let current-deg = 0
+  align(center, chart-container(size, size, title, t-with-legend, extra-height: extra-height, legend: if show-legend { legend-content }, legend-width: legend-width + legend-gap)[
+    // Pie chart
+    #box(width: size, height: size)[
+      #let center-x = radius
+      #let center-y = radius
+      #let current-deg = 0
 
-        #for (i, val) in values.enumerate() {
-          let slice-deg = (val / total) * 360
+      #for (i, val) in values.enumerate() {
+        let slice-deg = (val / total) * 360
 
-          let pts = pie-slice-points(center-x, center-y, radius, current-deg, current-deg + slice-deg)
+        let pts = pie-slice-points(center-x, center-y, radius, current-deg, current-deg + slice-deg)
 
-          place(
-            left + top,
-            polygon(
-              fill: get-color(t, i),
-              stroke: separator-stroke(t, thickness: 1pt),
-              ..pts,
-            )
+        place(
+          left + top,
+          polygon(
+            fill: get-color(t, i),
+            stroke: separator-stroke(t, thickness: 1pt),
+            ..pts,
           )
+        )
 
-          // Percentage label — try fitting into slice arc
-          if show-percentages {
-            let mid-deg = current-deg + slice-deg / 2
-            let pct = calc.round((val / total) * 100, digits: 1)
-            let pct-text = str(pct) + "%"
-            let pct-len = pct-text.len()
-            // Approximate available width from arc at label distance
-            let label-dist = radius * (if donut { 0.75 } else { 0.7 })
-            let arc-w = (label-dist / 1pt) * slice-deg / 360 * 2 * calc.pi * 1pt
-            let arc-h = radius * 0.3  // radial height available
-            let fit = try-fit-label(arc-w, arc-h, t.value-label-size, pct-len, shrink-min: 5pt)
-            if fit.fits {
-              let lx = center-x + label-dist * calc.cos(mid-deg * 1deg)
-              let ly = center-y + label-dist * calc.sin(mid-deg * 1deg)
-              place(
-                left + top,
-                dx: lx,
-                dy: ly,
-                move(dx: -1em, dy: -0.5em,
-                  text(size: fit.size, fill: t.text-color-inverse, weight: "bold")[#pct-text])
-              )
-            }
+        // Percentage label — try fitting into slice arc
+        if show-percentages {
+          let mid-deg = current-deg + slice-deg / 2
+          let pct = calc.round((val / total) * 100, digits: 1)
+          let pct-text = str(pct) + "%"
+          let pct-len = pct-text.len()
+          // Approximate available width from arc at label distance
+          let label-dist = radius * (if donut { 0.75 } else { 0.7 })
+          let arc-w = (label-dist / 1pt) * slice-deg / 360 * 2 * calc.pi * 1pt
+          let arc-h = radius * 0.3  // radial height available
+          let fit = try-fit-label(arc-w, arc-h, t.value-label-size, pct-len, shrink-min: 5pt)
+          if fit.fits {
+            let lx = center-x + label-dist * calc.cos(mid-deg * 1deg)
+            let ly = center-y + label-dist * calc.sin(mid-deg * 1deg)
+            place(
+              left + top,
+              dx: lx,
+              dy: ly,
+              move(dx: -1em, dy: -0.5em,
+                text(size: fit.size, fill: t.text-color-inverse, weight: "bold")[#pct-text])
+            )
           }
-
-          current-deg = current-deg + slice-deg
         }
 
-        // Donut hole
-        #if donut {
-          place-donut-hole(center-x, center-y, radius * donut-ratio, t)
-        }
-      ],
-
-      // Legend (if shown) — vertically centered relative to pie
-      if show-legend {
-        let legend-entries = labels.enumerate().map(((i, lbl)) => {
-          let pct = calc.round((values.at(i) / total) * 100, digits: 1)
-          str(lbl) + " (" + str(pct) + "%)"
-        })
-        box(height: size, align(horizon, draw-legend-vertical(legend-entries, t, width: legend-width)))
+        current-deg = current-deg + slice-deg
       }
-    )
+
+      // Donut hole
+      #if donut {
+        place-donut-hole(center-x, center-y, radius * donut-ratio, t)
+      }
+    ]
   ])
   })
 }
