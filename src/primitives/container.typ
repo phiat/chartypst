@@ -30,21 +30,15 @@
       legend
     }
     #if lp == "right" and legend != none {
-      grid(
-        columns: (width, 1fr),
-        column-gutter: 10pt,
-        align: (auto, horizon),
-        body,
-        legend,
-      )
+      box(width: width + legend-width + 10pt, height: height)[
+        #place(left + top, box(width: width, height: height, body))
+        #place(right + horizon, box(width: legend-width, legend))
+      ]
     } else if lp == "left" and legend != none {
-      grid(
-        columns: (1fr, width),
-        column-gutter: 10pt,
-        align: (horizon, auto),
-        legend,
-        body,
-      )
+      box(width: width + legend-width + 10pt, height: height)[
+        #place(left + horizon, box(width: legend-width, legend))
+        #place(right + top, box(width: width, height: height, body))
+      ]
     } else {
       body
       if legend != none and lp == "bottom" {

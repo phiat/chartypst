@@ -73,9 +73,7 @@
   } else { t }
 
   align(center, chart-container(size, size, title, t-with-legend, extra-height: 40pt, legend: legend-content, legend-width: legend-width)[
-
-      // Radar chart
-      box(width: size, height: size)[
+    #box(width: size, height: size)[
         // Draw grid polygons with value labels
         #for level in array.range(1, 5) {
           let r = radius * level / 4
