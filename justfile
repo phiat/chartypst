@@ -113,9 +113,23 @@ clean:
 clean-all: clean
     rm -f screenshots/demo/*.png screenshots/showcase/*.png
 
-# Full release prep: build everything, verify clean
+# Full release prep: build everything, verify README screenshots, verify clean
 release: build
-    @echo "Release artifacts ready"
+    #!/usr/bin/env bash
+    set -e
+    # Verify all README screenshot references point to existing files
+    broken=0
+    while IFS= read -r img; do
+        if [ ! -f "$img" ]; then
+            echo "ERROR: README references missing screenshot: $img"
+            broken=1
+        fi
+    done < <(grep -oP '!\[.*?\]\(\K[^)]+\.png' README.md)
+    if [ "$broken" -ne 0 ]; then
+        echo "Fix README screenshot paths before releasing"
+        exit 1
+    fi
+    echo "Release artifacts ready — all README screenshots verified"
 
 # Show project stats
 stats:
