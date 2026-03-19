@@ -94,8 +94,11 @@
 // Labels are centered under their position using the spacing width.
 #let draw-x-category-labels(labels, x-start, spacing, y-pos, theme, center-offset: 0pt) = {
   let n = labels.len()
-  let rotate-labels = n > 8
-  let skip = density-skip(n, spacing * n)
+  // Rotate labels if too many OR if the widest label exceeds the slot width
+  let max-label-w = labels.map(l => measure(text(size: theme.axis-label-size)[#l]).width).fold(0pt, (a, b) => calc.max(a, b))
+  let rotate-labels = n > 8 or max-label-w > spacing * 0.95
+  // When rotated, labels don't compete for horizontal space — show all
+  let skip = if rotate-labels { 1 } else { density-skip(n, spacing * n) }
 
   for i in array.range(n) {
     if calc.rem(i, skip) != 0 and i != n - 1 { continue }
@@ -231,14 +234,13 @@
   if x-label != none {
     let lbl-content = text(size: theme.axis-title-size, fill: theme.text-color)[#x-label]
     let lbl-size = measure(lbl-content)
-    let box-w = lbl-size.width + theme.axis-title-size
     // Position below x-tick labels: measure actual tick label height + small gap
     let tick-h = if x-tick-height != none { x-tick-height } else {
       measure(text(size: theme.axis-label-size)[0]).height * 1.4
     }
-    let x-title-dy = ax-origin-y + gap + tick-h + gap / 2
-    place(left + top, dx: x-center, dy: x-title-dy,
-      move(dx: -box-w / 2, box(width: box-w, align(center, lbl-content)))
+    let x-title-dy = ax-origin-y + gap * 0.75 + tick-h
+    place(left + top, dx: x-center - lbl-size.width / 2, dy: x-title-dy,
+      lbl-content
     )
   }
   if y-label != none {
@@ -246,8 +248,7 @@
     let rotated = rotate(-90deg, lbl-content)
     let rot-size = measure(rotated)
     // Align with tick label layout: ticks right-edge is at origin-x - gap/2
-    // Tight offset (gap/6) keeps title close without overlapping
-    let y-title-dx = ax-origin-x - gap / 6 - y-tick-width - rot-size.width
+    let y-title-dx = ax-origin-x - gap / 4 - y-tick-width - rot-size.width
 
     place(left + top, dx: y-title-dx, dy: y-center - rot-size.height / 2,
       rotated

@@ -231,11 +231,12 @@
   layout(size => {
   validate-series-data(data, "grouped-bar-chart")
   let t = _resolve-ctx(theme)
-  let (width, height) = resolve-size(width, height, size, n: data.labels.len(), theme: t)
   let labels = data.labels
   let series = data.series
   let n-groups = labels.len()
   let n-series = series.len()
+  // Auto-width uses n_groups × n_series since each series gets its own bar column
+  let (width, height) = resolve-size(width, height, size, n: n-groups * n-series, theme: t)
 
   let all-values = series.map(s => s.values).flatten()
   let max-val = nice-ceil(nonzero(calc.max(..all-values)))
